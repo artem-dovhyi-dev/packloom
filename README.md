@@ -31,7 +31,8 @@ The parts that are taste (what is fun) stay with the human: the skills propose, 
 | `/pack-build` | resolves `mods.txt`, fetches FTB-maven and direct-URL jars into `overrides/mods`, writes the `.mrpack` and `build-report.md` |
 | `/pack-test` | installs the loader server, finds or downloads the right Java (no sudo), starts it headless, writes `smoke-report.json` |
 | `/pack-triage` | maps mixin errors, missing dependencies and stack traces to suspect mods, from the server log or the Prism client logs |
-| `/pack-keys` | renders an HTML keyboard of every keybind from `options.txt`, grouped by mod, conflicts highlighted |
+| `/pack-keys` | renders an HTML keyboard of every keybind from `options.txt`, grouped by mod and by game stage, conflicts highlighted; `--apply` writes a layout from `keybinds.json` back into the instance |
+| `bundle` (CLI) | `dist/<name>-<ver>-client` (mrpack, INSTALL.md, keybinds.html) and `dist/<name>-<ver>-server` (mods, configs, server.properties, `start.sh` that installs the loader on first run), plus zips |
 
 ![keyboard map of a 1.20.1 Forge pack: 106 bound keys, 16 conflicts in red, keys shared with attack/use/sneak in amber](docs/keybinds.jpg)
 
@@ -76,6 +77,13 @@ In a project that holds a pack, add to `.claude/settings.json`:
 
 For hacking on the plugin itself: `claude --plugin-dir /path/to/packloom`.
 
+## Keybinds as data
+
+`keybinds.json` next to `pack.json` is optional and holds three things: a `layout` (keybind id → key, applied with
+`keys --apply` to the Prism instance and to `overrides/options.txt` so new instances get it), `stages` (always,
+in menus, with an item, late game, with friends…) and per-mod or per-key `when` notes. The rendered page lets a
+player filter the keyboard by stage, so keys for items they do not own yet stay out of the way.
+
 ## Verification loop, honestly
 
 The server test loads the same jars as the client and catches most load-time conflicts: missing dependencies,
@@ -89,9 +97,8 @@ is often mod B at the wrong version.
 ## Roadmap
 
 - quest book generation (FTB Quests SNBT) and an id registry built from the jars, generalised from the first pack
-- a static cheat-sheet page per pack: mod list, rules, keybinds
-- writing a cleaned-up keyboard layout back into `options.txt`
-- server deployment to a VPS
+- keybind categories read from the jars' language files instead of guessed from the id
+- server deployment to a VPS as a skill (the server bundle and its README already cover the manual path)
 
 Out of scope: generating Java mods, a launcher UI, the CurseForge API.
 
