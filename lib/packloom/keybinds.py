@@ -16,7 +16,8 @@ VANILLA_KEYS = {"attack", "use", "forward", "left", "back", "right", "jump", "sn
 VANILLA_SHARED = {"attack", "use", "sneak", "sprint", "pickItem"}   # mods bind onto these on purpose (JEI, Jade)
 KNOWN_NAMES = {"voice_chat": "voicechat", "voice_chat_group": "voicechat", "mute_microphone": "voicechat",
                "hide_icons": "voicechat", "disable_voice_chat": "voicechat", "push_to_talk": "voicechat", "whisper": "voicechat",
-               "voice_chat_settings": "voicechat", "unmountVehicle": "corpse"}
+               "voice_chat_settings": "voicechat", "voice_chat_toggle_recording": "voicechat", "voice_chat_adjust_volumes": "voicechat",
+               "unmountVehicle": "rftoolsbuilder", "prevDestination": "rftoolsbase", "nextDestination": "rftoolsbase", "openManual": "mcjtylib"}
 SKIP_SEGMENTS = {"key", "keys", "keybind", "keybinds", "keybinding", "keybindings", "gui", "options", "category", "categories"}
 
 
@@ -90,6 +91,58 @@ def summary(binds: list[Bind]) -> dict:
             "conflicts": hard, "shared_with_vanilla": soft}
 
 
+# ---------- pack notes: layout overrides, stages, "when is this key needed" ----------
+DEFAULT_STAGES = [{"id": "always", "title": "Always"}, {"id": "gui", "title": "In menus"}, {"id": "item", "title": "With an item"},
+                  {"id": "late", "title": "Late game"}, {"id": "server", "title": "With friends"}, {"id": "video", "title": "Video"},
+                  {"id": "off", "title": "Unbound"}]
+
+
+def load_notes(path: Optional[Path]) -> dict:
+    if not path or not path.exists():
+        return {"layout": {}, "stages": DEFAULT_STAGES, "mods": {}, "binds": {}}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data.setdefault("layout", {}); data.setdefault("mods", {}); data.setdefault("binds", {})
+    data.setdefault("stages", DEFAULT_STAGES)
+    return data
+
+
+def annotate(binds: list[Bind], notes: dict) -> list[dict]:
+    """Bind -> dict for the page, with stage/when/title from notes (bind level wins over mod level)."""
+    out = []
+    for b in binds:
+        mod_note = notes["mods"].get(b.mod, {})
+        note = notes["binds"].get(b.name, {})
+        stage = note.get("stage") or mod_note.get("stage") or ("always" if b.mod == "minecraft" else "item")
+        if not b.bound:
+            stage = "off"
+        out.append(asdict(b) | {"label": note.get("title") or b.label, "shared": b.vanilla_shared, "stage": stage,
+                                "when": note.get("when") or mod_note.get("when") or "",
+                                "mod_title": mod_note.get("title") or b.mod})
+    return out
+
+
+def apply_layout(options_text: str, layout: dict) -> tuple[str, list[str]]:
+    """Rewrite `key_<id>:<code>` lines according to layout; ids absent from the file are appended. Returns (text, changed ids)."""
+    changed, seen = [], set()
+    lines = options_text.splitlines()
+    for i, line in enumerate(lines):
+        if not line.startswith("key_"):
+            continue
+        name = line[4:].split(":", 1)[0]
+        if name in layout:
+            seen.add(name)
+            new = f"key_{name}:{layout[name]}"
+            if new != line:
+                lines[i] = new
+                changed.append(name)
+    for name, code in layout.items():
+        if name not in seen:
+            lines.append(f"key_{name}:{code}")
+            changed.append(name)
+    return "\n".join(lines) + "\n", changed
+
+
+
 # Mac ANSI layout; each key: (options.txt code suffix, label, width units)
 ROWS = [
     [("escape", "esc", 1.3)] + [(f"f{i}", f"F{i}", 1) for i in range(1, 13)],
@@ -110,8 +163,9 @@ EXTRA = [("key.mouse.left", "LMB"), ("key.mouse.right", "RMB"), ("key.mouse.midd
          ("key.keyboard.scroll.lock", "scrl"), ("key.keyboard.pause", "pause")] + [(f"key.keyboard.keypad.{i}", f"kp{i}") for i in range(10)]
 
 
-def render_html(binds: list[Bind], title: str = "Keybinds") -> str:
-    data = {"binds": [asdict(b) | {"label": b.label, "shared": b.vanilla_shared} for b in binds],
+def render_html(binds: list[Bind], title: str = "Keybinds", notes: Optional[dict] = None) -> str:
+    notes = notes or load_notes(None)
+    data = {"binds": annotate(binds, notes), "stages": notes["stages"], "intro": notes.get("intro", ""),
             "rows": [[{"code": "key.keyboard." + c, "label": l, "w": w} for c, l, w in row] for row in ROWS],
             "extra": [{"code": c, "label": l, "w": 1.2} for c, l in EXTRA],
             "summary": summary(binds)}
@@ -140,20 +194,26 @@ aside{display:flex;flex-direction:column;gap:12px}.panel{background:var(--card);
 .panel li:first-child{border-top:0}.mod{color:var(--mute);font-size:12px}input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
 .mods button{all:unset;cursor:pointer;display:flex;justify-content:space-between;width:100%;padding:4px 0}.mods button.on{color:var(--sel);font-weight:500}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mute)}.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
+.chip{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--mute)}.chip.on{background:var(--sel);color:#fff;border-color:var(--sel)}
+.grp h3{font-size:13px;font-weight:500;margin:10px 0 4px;color:var(--mute)}.grp li{display:block}.grp .k{display:inline-block;min-width:34px;padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:11px;text-align:center;margin-right:6px;background:var(--free)}.grp .w{color:var(--mute);font-size:12px;display:block;margin-left:46px}
 .conf{color:var(--many-ink);background:var(--many);border-radius:6px;padding:2px 6px;font-size:12px;display:inline-block;margin:2px 2px 0 0}
 </style></head><body>
 <header><h1>__TITLE__</h1><span class="stat"><b id="s-bound"></b> bound</span><span class="stat"><b id="s-unbound"></b> unbound</span>
 <span class="stat"><b id="s-conf"></b> conflicts</span><span class="stat"><b id="s-mods"></b> mods</span>
 <span class="legend"><span><i class="sw" style="background:var(--free)"></i>free</span><span><i class="sw" style="background:var(--van)"></i>vanilla only</span>
 <span><i class="sw" style="background:var(--one)"></i>one mod action</span><span><i class="sw" style="background:var(--soft)"></i>shared with attack/use/sneak</span><span><i class="sw" style="background:var(--many)"></i>conflict</span></span></header>
+<div id="intro" style="padding:0 20px;color:var(--mute);max-width:900px"></div>
+<div id="stages" style="padding:8px 20px;display:flex;gap:6px;flex-wrap:wrap"></div>
 <main><section class="kb" id="kb"></section>
 <aside><div class="panel"><input id="q" placeholder="Search action or mod…"></div>
 <div class="panel"><h2 id="p-title">Hover a key</h2><ul id="p-list"></ul></div>
 <div class="panel"><h2>Conflicts</h2><div id="conf"></div></div>
 <div class="panel mods"><h2>Mods</h2><ul id="mods"></ul></div></aside></main>
+<section class="panel grp" id="groups" style="margin:0 20px 20px"></section>
 <script>
 const D=__DATA__;const byKey={};for(const b of D.binds){if(b.code.endsWith('.unknown'))continue;(byKey[b.code]=byKey[b.code]||[]).push(b)}
-let filterMod=null,pinned=null,query='';
+let filterMod=null,pinned=null,query='',stageOn=new Set(D.stages.map(s=>s.id));const stageTitle=Object.fromEntries(D.stages.map(s=>[s.id,s.title]));
+document.getElementById('intro').textContent=D.intro||'';
 function cls(code){const bs=byKey[code]||[];if(!bs.length)return'';const mods=new Set(bs.map(b=>b.modifier));
 const groups={};for(const b of bs){(groups[b.modifier]=groups[b.modifier]||[]).push(b)}const hard=Object.values(groups).some(g=>g.length>1&&!g.some(b=>b.shared));const soft=Object.values(groups).some(g=>g.length>1&&g.some(b=>b.shared));
 if(hard)return'many';if(soft)return'soft';if(bs.every(b=>b.mod==='minecraft'))return'van';return'one'}
@@ -161,9 +221,9 @@ function keyEl(k){const d=document.createElement('div');d.className='key '+cls(k
 const bs=byKey[k.code]||[];d.innerHTML=`<span class="l">${k.label}</span><span class="n">${bs.length?bs.map(b=>b.label).join(', '):''}</span>`;
 d.title=bs.map(b=>(b.modifier?b.modifier+'+':'')+b.name).join('\n');d.onmouseenter=()=>{if(!pinned)show(k)};d.onclick=()=>{pinned=pinned===k.code?null:k.code;show(k);paint()};return d}
 function show(k){const bs=byKey[k.code]||[];document.getElementById('p-title').textContent=(k.label||'space')+(pinned?' (pinned)':'')+(bs.length?'':' — free');
-document.getElementById('p-list').innerHTML=bs.map(b=>`<li><span>${b.modifier?b.modifier+' + ':''}${b.label}</span><span class="mod">${b.mod}</span></li>`).join('')}
-function matches(code){const bs=byKey[code]||[];if(filterMod&&!bs.some(b=>b.mod===filterMod))return false;if(query&&!bs.some(b=>(b.name+' '+b.label+' '+b.mod).toLowerCase().includes(query)))return false;return true}
-function paint(){for(const el of document.querySelectorAll('.key')){el.classList.toggle('dim',(filterMod||query)&&!matches(el.dataset.code));el.classList.toggle('sel',pinned===el.dataset.code)}}
+document.getElementById('p-list').innerHTML=bs.map(b=>`<li><span>${b.modifier?b.modifier+' + ':''}${b.label}${b.when?`<span class="w" style="margin-left:0">${b.when}</span>`:''}</span><span class="mod">${b.mod_title}</span></li>`).join('')}
+function matches(code){const bs=byKey[code]||[];if(stageOn.size<D.stages.length&&!bs.some(b=>stageOn.has(b.stage)))return false;if(filterMod&&!bs.some(b=>b.mod===filterMod))return false;if(query&&!bs.some(b=>(b.name+' '+b.label+' '+b.mod).toLowerCase().includes(query)))return false;return true}
+function paint(){for(const el of document.querySelectorAll('.key')){el.classList.toggle('dim',(filterMod||query||stageOn.size<D.stages.length)&&!matches(el.dataset.code));el.classList.toggle('sel',pinned===el.dataset.code)}}
 const kb=document.getElementById('kb');for(const row of D.rows){const r=document.createElement('div');r.className='row';for(const k of row)r.appendChild(keyEl(k));kb.appendChild(r)}
 const ex=document.createElement('div');ex.className='extra';for(const k of D.extra)ex.appendChild(keyEl(k));kb.appendChild(ex);
 const S=D.summary;document.getElementById('s-bound').textContent=S.bound;document.getElementById('s-unbound').textContent=S.unbound;
@@ -172,5 +232,9 @@ document.getElementById('conf').innerHTML=Object.entries(S.conflicts).map(([k,v]
 document.getElementById('mods').innerHTML=Object.entries(S.mods).map(([m,n])=>`<li><button data-mod="${m}"><span>${m}</span><span class="mod">${n}</span></button></li>`).join('');
 for(const b of document.querySelectorAll('.mods button'))b.onclick=()=>{filterMod=filterMod===b.dataset.mod?null:b.dataset.mod;for(const x of document.querySelectorAll('.mods button'))x.classList.toggle('on',x.dataset.mod===filterMod);paint()};
 document.getElementById('q').oninput=e=>{query=e.target.value.trim().toLowerCase();paint()};
+const st=document.getElementById('stages');for(const s of D.stages){const b=document.createElement('button');b.className='chip on';b.textContent=s.title;b.onclick=()=>{if(stageOn.size===D.stages.length){stageOn=new Set([s.id])}else if(stageOn.has(s.id)){stageOn.delete(s.id);if(!stageOn.size)stageOn=new Set(D.stages.map(x=>x.id))}else stageOn.add(s.id);for(const c of st.children)c.classList.toggle('on',stageOn.has(c.dataset.id));paint()};b.dataset.id=s.id;st.appendChild(b)}
+const keyName=c=>c.replace('key.keyboard.','').replace('key.mouse.','mouse ').replace('.accent','').replace('left.','L-').replace('right.','R-');
+const groups=document.getElementById('groups');for(const s of D.stages){const items=D.binds.filter(b=>b.stage===s.id);if(!items.length)continue;const h=document.createElement('h3');h.textContent=s.title+' · '+items.length;groups.appendChild(h);const ul=document.createElement('ul');
+for(const b of items.sort((a,b)=>(a.mod+a.label).localeCompare(b.mod+b.label))){const li=document.createElement('li');li.innerHTML=`<span class="k">${b.code.endsWith('.unknown')?'—':(b.modifier?b.modifier.toLowerCase()+'+':'')+keyName(b.code)}</span>${b.label} <span class="mod">${b.mod_title}</span>${b.when?`<span class="w">${b.when}</span>`:''}`;ul.appendChild(li)}groups.appendChild(ul)}
 </script></body></html>
 """

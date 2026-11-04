@@ -85,12 +85,26 @@ class KeybindTests(unittest.TestCase):
                                     "key_key.hotbar.1:key.keyboard.1\nkey_key.jade.narrate:key.keyboard.b:SHIFT\n")
         self.assertEqual([b.mod for b in bs], ["minecraft", "jade", "sophisticatedbackpacks", "spark", "minecraft", "jade"])
         self.assertEqual([b.mod for b in keybinds.parse_options("key_key.voice_chat:key.keyboard.v\nkey_key.dynamic_fps.toggle:key.keyboard.f\nkey_gui.xaero_open_map:key.keyboard.m\n")], ["voicechat", "dynamic_fps", "xaero"])
+        self.assertEqual(keybinds.mod_of("key.prevDestination"), "rftoolsbase")
         s = keybinds.summary(bs)
         self.assertEqual(s["unbound"], 1)
         self.assertEqual(list(s["conflicts"]), ["key.keyboard.b"])   # SHIFT+B is a different chord
         soft = keybinds.summary(keybinds.parse_options("key_key.sneak:key.keyboard.left.shift\nkey_key.jade.show_details:key.keyboard.left.shift\n"))
         self.assertEqual(soft["conflicts"], {})
         self.assertEqual(list(soft["shared_with_vanilla"]), ["key.keyboard.left.shift"])
+
+    def test_apply_layout_and_notes(self):
+        text, changed = keybinds.apply_layout("key_key.inventory:key.keyboard.e\nkey_key.x.a:key.keyboard.b\nfoo:bar\n",
+                                              {"key.x.a": "key.keyboard.y", "key.new.k": "key.keyboard.k"})
+        self.assertEqual(changed, ["key.x.a", "key.new.k"])
+        self.assertIn("key_key.x.a:key.keyboard.y", text)
+        self.assertIn("key_key.new.k:key.keyboard.k", text)
+        self.assertIn("foo:bar", text)
+        notes = {"layout": {}, "stages": keybinds.DEFAULT_STAGES, "mods": {"x": {"stage": "late", "when": "later"}},
+                 "binds": {"key.x.a": {"stage": "gui", "title": "A!"}}}
+        rows = keybinds.annotate(keybinds.parse_options("key_key.x.a:key.keyboard.y\nkey_key.x.b:key.keyboard.unknown\nkey_key.inventory:key.keyboard.e\n"), notes)
+        self.assertEqual([(r["stage"], r["label"]) for r in rows], [("gui", "A!"), ("off", "B"), ("always", "Inventory")])
+        self.assertEqual(rows[0]["when"], "later")
 
     def test_render_is_self_contained(self):
         html = keybinds.render_html(keybinds.parse_options("key_key.inventory:key.keyboard.e\n"), "T")
