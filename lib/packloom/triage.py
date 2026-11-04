@@ -38,12 +38,19 @@ def _add(suspects: list[Suspect], mod: str, kind: str, evidence: str, action: st
         suspects.append(Suspect(mod, kind, evidence.strip()[:300], action))
 
 
-def analyze(lines: list[str], crash_text: Optional[str] = None, mod_ids: Optional[set] = None) -> Triage:
+CLIENT_OK = ("Sound engine started", "OpenAL initialized", "Narrator library")
+
+
+def analyze(lines: list[str], crash_text: Optional[str] = None, mod_ids: Optional[set] = None, client: bool = False) -> Triage:
     mod_ids = set(mod_ids or ())
-    t = Triage(ok=any("Done (" in l and "For help" in l for l in lines))
+    if client:
+        ok = any(any(m in l for m in CLIENT_OK) for l in lines) and not crash_text
+    else:
+        ok = any("Done (" in l and "For help" in l for l in lines)
+    t = Triage(ok=ok)
     t.errors = [l.strip() for l in lines if re.search(r"/(ERROR|FATAL)\]", l)]
     t.warnings = sum(1 for l in lines if re.search(r"/WARN\]", l) and "Mod file" not in l)
-    t.mods_loaded = next((l.strip() for l in lines if "mods loaded" in l.lower()), "")
+    t.mods_loaded = next((m.group(0) for l in lines for m in [re.search(r"Loading \d+ mods?:|\d+ mods? loaded", l)] if m), "")
     joined = "\n".join(lines) + "\n" + (crash_text or "")
 
     for m in re.finditer(r"Mixin apply for mod (\S+?) failed|Mixin config (\S+?)\.mixins\.json", joined):

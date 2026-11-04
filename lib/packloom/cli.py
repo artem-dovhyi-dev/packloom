@@ -116,7 +116,7 @@ def cmd_triage(args):
         crash_text = crash.read_text(errors="replace") if crash and crash.exists() else None
         source = str(log)
         mods_dir = pack.server_dir / "mods"
-    t = triage.analyze(lines, crash_text, server.mod_ids_from_jars(mods_dir) if mods_dir.exists() else set())
+    t = triage.analyze(lines, crash_text, server.mod_ids_from_jars(mods_dir) if mods_dir.exists() else set(), client=args.client)
     out = {"source": source, **t.as_dict()}
     out["errors"] = out["errors"][:30]
     print(json.dumps(out, indent=2, ensure_ascii=False))

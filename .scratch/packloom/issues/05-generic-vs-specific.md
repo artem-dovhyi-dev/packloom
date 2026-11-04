@@ -31,3 +31,7 @@ GAME/LOADER/PACK_NAME/PACK_VERSION, які зараз зашиті в build.py, 
 
 Папка збірки знаходиться так: аргумент `--pack <dir>`, інакше поточна тека, інакше перша тека з `pack.json`
 у проєкті. Старі скрипти в techpack лишаються, доки плагін не збере той самий mrpack; після цього їх видаляємо.
+
+## Comments
+
+- 2026-11-05 02:15: виконано. build.py і smoke-test.py перенесені в `lib/packloom` (build.py, server.py, triage.py); techpack отримав `pack.json`, FTB-моди і Flux Networks переписані на `ftb:`/`manual:`; плагін зібрав mrpack з ідентичним індексом (80 файлів, ті самі хеші, env і overrides). `.claude/settings.json` у techpack підключає плагін з GitHub. Старі скрипти лишаються до кількох успішних збірок.

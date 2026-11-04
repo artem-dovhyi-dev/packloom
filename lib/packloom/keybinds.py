@@ -9,7 +9,14 @@ from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Optional
 
-VANILLA_PREFIXES = ("key.hotbar.", "key.categories.")
+VANILLA_KEYS = {"attack", "use", "forward", "left", "back", "right", "jump", "sneak", "sprint", "drop", "inventory",
+                "chat", "playerlist", "pickItem", "command", "socialInteractions", "screenshot", "togglePerspective",
+                "smoothCamera", "fullscreen", "spectatorOutlines", "swapOffhand", "saveToolbarActivator",
+                "loadToolbarActivator", "advancements"}
+VANILLA_SHARED = {"attack", "use", "sneak", "sprint", "pickItem"}   # mods bind onto these on purpose (JEI, Jade)
+KNOWN_NAMES = {"voice_chat": "voicechat", "voice_chat_group": "voicechat", "mute_microphone": "voicechat",
+               "hide_icons": "voicechat", "disable_voice_chat": "voicechat", "push_to_talk": "voicechat", "whisper": "voicechat",
+               "voice_chat_settings": "voicechat", "unmountVehicle": "corpse"}
 SKIP_SEGMENTS = {"key", "keys", "keybind", "keybinds", "keybinding", "keybindings", "gui", "options", "category", "categories"}
 
 
@@ -30,19 +37,26 @@ class Bind:
     def bound(self) -> bool:
         return not self.code.endswith(".unknown")
 
+    @property
+    def vanilla_shared(self) -> bool:
+        return self.mod == "minecraft" and self.name.split(".")[-1] in VANILLA_SHARED
+
 
 def mod_of(name: str) -> str:
     parts = name.split(".")
-    if len(parts) <= 2 and parts[0] == "key":
+    if parts[0] == "key" and len(parts) == 2 and parts[1] in VANILLA_KEYS:
         return "minecraft"
-    if name.startswith(VANILLA_PREFIXES):
+    if name.startswith("key.hotbar.") or name.startswith("key.categories."):
         return "minecraft"
+    if len(parts) == 2 and parts[1] in KNOWN_NAMES:
+        return KNOWN_NAMES[parts[1]]
     for seg in parts:
         if seg.lower() in SKIP_SEGMENTS:
             continue
-        seg = re.split(r"[_\-]", seg)[0]
-        return seg.lower() or "unknown"
-    return "unknown"
+        if len(parts) <= 2:                 # `gui.xaero_open_map`: the mod hides in the first word
+            seg = re.split(r"[_\-]", seg)[0]
+        return seg.lower() or "other"
+    return "other"
 
 
 def parse_options(text: str) -> list[Bind]:
@@ -69,9 +83,11 @@ def summary(binds: list[Bind]) -> dict:
     for b in binds:
         per_mod[b.mod] += 1
     c = conflicts(binds)
+    hard = {k: [b.name for b in v] for k, v in c.items() if not any(b.vanilla_shared for b in v)}
+    soft = {k: [b.name for b in v] for k, v in c.items() if any(b.vanilla_shared for b in v)}
     return {"total": len(binds), "bound": sum(b.bound for b in binds), "unbound": sum(not b.bound for b in binds),
             "mods": dict(sorted(per_mod.items(), key=lambda kv: -kv[1])),
-            "conflicts": {k: [b.name for b in v] for k, v in c.items()}}
+            "conflicts": hard, "shared_with_vanilla": soft}
 
 
 # Mac ANSI layout; each key: (options.txt code suffix, label, width units)
@@ -95,7 +111,7 @@ EXTRA = [("key.mouse.left", "LMB"), ("key.mouse.right", "RMB"), ("key.mouse.midd
 
 
 def render_html(binds: list[Bind], title: str = "Keybinds") -> str:
-    data = {"binds": [asdict(b) | {"label": b.label} for b in binds],
+    data = {"binds": [asdict(b) | {"label": b.label, "shared": b.vanilla_shared} for b in binds],
             "rows": [[{"code": "key.keyboard." + c, "label": l, "w": w} for c, l, w in row] for row in ROWS],
             "extra": [{"code": c, "label": l, "w": 1.2} for c, l in EXTRA],
             "summary": summary(binds)}
@@ -106,8 +122,8 @@ TEMPLATE = r"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__</title>
 <style>
-:root{--bg:#f6f5f0;--card:#fff;--ink:#1f1f1d;--mute:#6b6a64;--line:#dcdad2;--free:#eceae2;--one:#b5d4f4;--one-ink:#0c447c;--many:#f09595;--many-ink:#791f1f;--van:#d3d1c7;--sel:#7f77dd}
-@media (prefers-color-scheme:dark){:root{--bg:#1b1b19;--card:#242422;--ink:#ecebe4;--mute:#a09f97;--line:#3a3a36;--free:#2e2e2b;--one:#185fa5;--one-ink:#e6f1fb;--many:#a32d2d;--many-ink:#fcebeb;--van:#444441}}
+:root{--bg:#f6f5f0;--card:#fff;--ink:#1f1f1d;--mute:#6b6a64;--line:#dcdad2;--free:#eceae2;--one:#b5d4f4;--one-ink:#0c447c;--many:#f09595;--many-ink:#791f1f;--soft:#fac775;--soft-ink:#633806;--van:#d3d1c7;--sel:#7f77dd}
+@media (prefers-color-scheme:dark){:root{--bg:#1b1b19;--card:#242422;--ink:#ecebe4;--mute:#a09f97;--line:#3a3a36;--free:#2e2e2b;--one:#185fa5;--one-ink:#e6f1fb;--many:#a32d2d;--many-ink:#fcebeb;--soft:#854f0b;--soft-ink:#faeeda;--van:#444441}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,system-ui,sans-serif}
 header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:20px;align-items:baseline;flex-wrap:wrap}
 h1{font-size:18px;font-weight:500;margin:0}.stat{color:var(--mute)}.stat b{color:var(--ink);font-weight:500}
@@ -117,7 +133,7 @@ main{display:grid;grid-template-columns:1fr 300px;gap:16px;padding:16px 20px}@me
 display:flex;flex-direction:column;justify-content:space-between;padding:3px 5px;font-size:11px;cursor:pointer;position:relative;min-width:0}
 .key .l{font-weight:500}.key .n{font-size:10px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .key.one{background:var(--one);color:var(--one-ink)}.key.one .n{color:var(--one-ink)}.key.many{background:var(--many);color:var(--many-ink)}.key.many .n{color:var(--many-ink)}
-.key.van{background:var(--van)}.key.dim{opacity:.25}.key.sel{outline:2px solid var(--sel);outline-offset:1px}
+.key.soft{background:var(--soft);color:var(--soft-ink)}.key.soft .n{color:var(--soft-ink)}.key.van{background:var(--van)}.key.dim{opacity:.25}.key.sel{outline:2px solid var(--sel);outline-offset:1px}
 .extra{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 aside{display:flex;flex-direction:column;gap:12px}.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
 .panel h2{font-size:14px;font-weight:500;margin:0 0 8px}.panel ul{list-style:none;margin:0;padding:0}.panel li{padding:4px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
@@ -129,7 +145,7 @@ aside{display:flex;flex-direction:column;gap:12px}.panel{background:var(--card);
 <header><h1>__TITLE__</h1><span class="stat"><b id="s-bound"></b> bound</span><span class="stat"><b id="s-unbound"></b> unbound</span>
 <span class="stat"><b id="s-conf"></b> conflicts</span><span class="stat"><b id="s-mods"></b> mods</span>
 <span class="legend"><span><i class="sw" style="background:var(--free)"></i>free</span><span><i class="sw" style="background:var(--van)"></i>vanilla only</span>
-<span><i class="sw" style="background:var(--one)"></i>one mod action</span><span><i class="sw" style="background:var(--many)"></i>conflict</span></span></header>
+<span><i class="sw" style="background:var(--one)"></i>one mod action</span><span><i class="sw" style="background:var(--soft)"></i>shared with attack/use/sneak</span><span><i class="sw" style="background:var(--many)"></i>conflict</span></span></header>
 <main><section class="kb" id="kb"></section>
 <aside><div class="panel"><input id="q" placeholder="Search action or mod…"></div>
 <div class="panel"><h2 id="p-title">Hover a key</h2><ul id="p-list"></ul></div>
@@ -139,8 +155,8 @@ aside{display:flex;flex-direction:column;gap:12px}.panel{background:var(--card);
 const D=__DATA__;const byKey={};for(const b of D.binds){if(b.code.endsWith('.unknown'))continue;(byKey[b.code]=byKey[b.code]||[]).push(b)}
 let filterMod=null,pinned=null,query='';
 function cls(code){const bs=byKey[code]||[];if(!bs.length)return'';const mods=new Set(bs.map(b=>b.modifier));
-const groups={};for(const b of bs){(groups[b.modifier]=groups[b.modifier]||[]).push(b)}const conflict=Object.values(groups).some(g=>g.length>1);
-if(conflict)return'many';if(bs.every(b=>b.mod==='minecraft'))return'van';return'one'}
+const groups={};for(const b of bs){(groups[b.modifier]=groups[b.modifier]||[]).push(b)}const hard=Object.values(groups).some(g=>g.length>1&&!g.some(b=>b.shared));const soft=Object.values(groups).some(g=>g.length>1&&g.some(b=>b.shared));
+if(hard)return'many';if(soft)return'soft';if(bs.every(b=>b.mod==='minecraft'))return'van';return'one'}
 function keyEl(k){const d=document.createElement('div');d.className='key '+cls(k.code);d.style.flex=`0 0 ${k.w*44}px`;d.dataset.code=k.code;
 const bs=byKey[k.code]||[];d.innerHTML=`<span class="l">${k.label}</span><span class="n">${bs.length?bs.map(b=>b.label).join(', '):''}</span>`;
 d.title=bs.map(b=>(b.modifier?b.modifier+'+':'')+b.name).join('\n');d.onmouseenter=()=>{if(!pinned)show(k)};d.onclick=()=>{pinned=pinned===k.code?null:k.code;show(k);paint()};return d}
