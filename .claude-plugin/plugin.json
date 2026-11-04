@@ -1,0 +1,9 @@
+{
+  "name": "packloom",
+  "description": "Minecraft modpacks as plain text: resolve mods on Modrinth, build .mrpack, smoke-test on a headless server, triage crash logs, map keybinds.",
+  "author": { "name": "Artem Dovhyi", "url": "https://github.com/artem-dovhyi-dev" },
+  "homepage": "https://github.com/artem-dovhyi-dev/packloom",
+  "repository": "https://github.com/artem-dovhyi-dev/packloom",
+  "license": "MIT",
+  "keywords": ["minecraft", "modpack", "modrinth", "forge", "fabric", "prism-launcher"]
+}

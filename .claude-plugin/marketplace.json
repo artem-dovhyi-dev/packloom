@@ -1,0 +1,7 @@
+{
+  "name": "packloom",
+  "owner": { "name": "Artem Dovhyi" },
+  "plugins": [
+    { "name": "packloom", "source": "./", "description": "Minecraft modpack editor skills: build, test, triage, keybinds." }
+  ]
+}
