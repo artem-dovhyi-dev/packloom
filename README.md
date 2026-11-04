@@ -1,6 +1,6 @@
 # packloom
 
-**Status: early, in active development. Built for one pack first (a 1.20.1 Forge tech pack); the author uses it nightly.**
+**Status: early, in active development. Built for one pack first (a 1.20.1 Forge tech pack, 80 files), where it already builds an mrpack identical to the hand-written script it replaced and brings the server up in 24 s.**
 
 packloom is a set of [Claude Code](https://claude.com/claude-code) skills that turn a Minecraft modpack into plain
 text you can edit, build and verify with an agent: a mod list resolved against Modrinth, a server smoke test that
@@ -32,6 +32,8 @@ The parts that are taste (what is fun) stay with the human: the skills propose, 
 | `/pack-test` | installs the loader server, finds or downloads the right Java (no sudo), starts it headless, writes `smoke-report.json` |
 | `/pack-triage` | maps mixin errors, missing dependencies and stack traces to suspect mods, from the server log or the Prism client logs |
 | `/pack-keys` | renders an HTML keyboard of every keybind from `options.txt`, grouped by mod, conflicts highlighted |
+
+![keyboard map of a 1.20.1 Forge pack: 106 bound keys, 16 conflicts in red, keys shared with attack/use/sneak in amber](docs/keybinds.jpg)
 
 Everything is Python 3.9+ standard library. The skills are thin wrappers around `lib/packloom`, which is also
 a CLI: `PYTHONPATH=lib python3 -m packloom --help`.
