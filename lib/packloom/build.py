@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -80,6 +81,7 @@ def build(pack: Pack, out: Optional[Path] = None, want_server: bool = False, log
         log(f"  MANUAL  {m.ref}: {m.comment}")
     if want_server:
         sync_server_mods(pack, files, log)
+        sync_server_overrides(pack, log)
     return result
 
 
@@ -126,3 +128,30 @@ def sync_server_mods(pack: Pack, files: list[dict], log=print) -> Path:
             download(e["downloads"][0], sdir / name, sha1=e["hashes"].get("sha1"))
     log(f"server mods: {sdir} ({len(list(sdir.glob('*.jar')))} jars)")
     return sdir
+
+
+SERVER_OVERRIDE_DIRS = ("config", "defaultconfigs")
+
+
+def sync_server_overrides(pack: Pack, log=print) -> list[Path]:
+    """server/config and server/defaultconfigs follow overrides/: a file is copied over, a directory is replaced
+    whole (the pack owns it: quests, datapacks), everything else the server generated is left alone."""
+    touched = []
+    for sub in SERVER_OVERRIDE_DIRS:
+        src = pack.overrides / sub
+        if not src.is_dir():
+            continue
+        dest = pack.server_dir / sub
+        dest.mkdir(parents=True, exist_ok=True)
+        for child in sorted(src.iterdir()):
+            target = dest / child.name
+            if child.is_dir():
+                if target.exists():
+                    shutil.rmtree(target)
+                shutil.copytree(child, target)
+            else:
+                shutil.copy2(child, target)
+            touched.append(target)
+    if touched:
+        log(f"server overrides: {len(touched)} entries synced into {pack.server_dir}")
+    return touched

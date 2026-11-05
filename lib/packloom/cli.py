@@ -81,6 +81,7 @@ def cmd_test(args):
         data = json.loads(report_json.read_text())
         loader_version = data["loader_version"]
         build_mod.sync_server_mods(pack, _files_from_mrpack(pack))
+        build_mod.sync_server_overrides(pack)
     java = _java(pack, args)
     server.ensure_server(pack, java, loader_version)
     if args.accept_eula:
@@ -189,6 +190,7 @@ def cmd_bundle(args):
     if args.what in ("client", "both"):
         guide = (docs / "INSTALL.md").read_text(encoding="utf-8") if (docs / "INSTALL.md").exists() else f"# {pack.name}\n\nImport the .mrpack in Prism Launcher.\n"
         extras = [pack.dir / "keybinds.html", pack.dir / "build-report.md"]
+        extras += [p for p in sorted(docs.glob("*.md")) if p.name not in ("INSTALL.md", "SERVER.md")]  # GUIDE.md and friends
         folder = bundle.client_bundle(pack, out_dir, extras, guide)
         print(f"client bundle: {folder} (+ .zip)")
     if args.what in ("server", "both"):

@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
-from packloom import keybinds, triage  # noqa: E402
+from packloom import build, keybinds, triage  # noqa: E402
 from packloom.manifest import java_major_for, load_pack, parse_mods  # noqa: E402
 from packloom.modrinth import pick_version  # noqa: E402
 from packloom.sources import ftb_branch  # noqa: E402
@@ -115,3 +115,24 @@ class KeybindTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ServerOverridesTests(unittest.TestCase):
+    def test_dirs_replaced_files_copied_rest_kept(self):
+        from packloom.manifest import Pack
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            pack = Pack(dir=root, name="P", version="1", minecraft="1.20.1", loader="forge")
+            (root / "overrides/config/ftbquests/quests").mkdir(parents=True)
+            (root / "overrides/config/ftbquests/quests/new.snbt").write_text("new")
+            (root / "overrides/config/a.toml").write_text("a=2")
+            (root / "server/config/ftbquests/quests").mkdir(parents=True)
+            (root / "server/config/ftbquests/quests/old.snbt").write_text("old")
+            (root / "server/config/a.toml").write_text("a=1")
+            (root / "server/config/mekanism").mkdir()
+            (root / "server/config/mekanism/general.toml").write_text("keep")
+            build.sync_server_overrides(pack, log=lambda *_: None)
+            q = root / "server/config/ftbquests/quests"
+            self.assertEqual(sorted(p.name for p in q.iterdir()), ["new.snbt"])
+            self.assertEqual((root / "server/config/a.toml").read_text(), "a=2")
+            self.assertEqual((root / "server/config/mekanism/general.toml").read_text(), "keep")
