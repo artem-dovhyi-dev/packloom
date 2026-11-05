@@ -8,36 +8,53 @@ skill runs the same command and talks you through the choices. Output below is r
 
 > RPG and industry in parallel, some farming, a pretty world, not much grind, for four friends, on my M1.
 
-Words become tags, tags pick **families** from the catalog (one family per job: Thermal, Mekanism, AE2,
-DivineRPG, bees, Farmer's Delight, world generation, coop, quality of life, performance...). Hardware drops
-heavy families, `--no-grind` drops grindy ones unless you name them.
+Words become tags, tags pick **families** from the catalog (80 of them, one per job: Thermal, Create,
+Mekanism, AE2, Refined Storage, Immersive Engineering, DivineRPG, the Aether, Botania, Ars Nouveau, bees,
+Farmer's Delight, Macaw's, world generation, structures, coop, quality of life, performance, balance...).
+Hardware drops heavy families, `--no-grind` drops grindy ones unless you name them. Quality of life
+(JEI, Jade, inventory sorting, keybind search, enchantment tooltips, backpacks), performance, balance
+(Almost Unified, Polymorph) and Faithful 32x textures are in every proposal; the textures and the shader pack
+are shipped enabled, `build` writes the `resourcePacks:` line and the Oculus config.
 
 ```
 $ packloom design --want tech,rpg,farming,food,worldgen,coop --no-grind --include divinerpg --detect
-Proposal for Minecraft 1.20.1 forge (tier mid): 15 families, 73 mods.txt lines
+Proposal for Minecraft 1.20.1 forge (tier mid): 18 families, 111 mods.txt lines
 
 + Thermal Series [thermal]: wants tech
-    ores and alloys, machines and dynamos, ducts, farming machines, Fluxbore and jetpack
 + Quality of life [qol]: default for every pack
 + Performance [perf]: default for every pack
++ Balance [balance]: default for every pack
 + Mekanism [mekanism]: wants tech
 + Applied Energistics 2 [ae2]: wants tech
 + DivineRPG [divinerpg]: asked for by id; wants rpg
-    ! grindy by default: 4 boss fragments = 1 soul instead of 8 (pack config)
 + FTB coop and quests [coop]: wants coop
++ Logistics [logistics]: wants tech
 …
+
 skipped:
   - create: heavy for a mid-tier machine
+
+also in the catalog for these tags (add one with --include <id>):
+  - refined-storage: Refined Storage [tech]
+  - ie: Immersive Engineering [tech]
+  - industrial-foregoing: Industrial Foregoing [farming, tech]
+  - powah: Powah [tech]
+  - pneumaticcraft: PneumaticCraft [tech]
+  - space: Ad Astra [tech]
+  - draconic: Draconic Evolution [rpg, tech]
+  … 21 more
 ```
 
-Every family comes with its add-ons and a one-line reason, so the person sees *why* 73 lines, not just 73
-lines. `--verify` asks Modrinth for a version of every slug for this game and loader; `--write` writes
-`mods.txt` grouped by family with comments. Swapping Thermal for Create is `--include create`.
+Every family comes with its add-ons and a one-line reason, so the person sees *why* 111 lines, not just 111
+lines. A tag picks only the core family for its job; the rest of the catalog shows up as "also in the
+catalog", so "I'd like Immersive Engineering too" is `--include ie`, not a search. `--verify` asks Modrinth
+for a version of every slug for this game and loader; `--write` writes `mods.txt` grouped by family with
+comments. Swapping Thermal for Create is `--include create`.
 
 What is not automatic: taste. The catalog is one opinion (one mod per job, few add-ons); the conversation is
 where "I'd rather have Create" happens.
 
-## 2. "Make it easier / harder" and "a sword that combines two mods" → tune.json
+## 2. "Make it easier / harder", "a sword that combines two mods", "the lines should meet" → tune.json
 
 Recipes are data in `tune.json`; packloom checks every id against `registry.json` (16 082 recipes, 8 822
 items, 1 477 item tags indexed from TechPack's jars) and writes the KubeJS scripts.
@@ -78,6 +95,27 @@ That comparison exists because of a real miss: a first draft swapped an input of
 recipe has the mod's own type (`quarryplus:workbench_recipe`); the registry matched it, KubeJS could not edit
 it, and the server said `modified 1`. Now `tune check` warns on such types and `verify` reports the mismatch.
 Reference: [tune.md](tune.md).
+
+**Integrations.** One blade does not make two lines one pack. TechPack 1.3.0 has 19 **integrations** in
+`tune.json`, each a self-contained bridge with its own items and recipes: Thermal's Pulverizer and Mekanism's
+Enrichment Chamber double DivineRPG's ores (three new dusts), an Induction Smelter alloy of Realmite and
+Signalum makes the pack's tool tier, a Combiner plate of Arlemite and Osmium makes its armor tier, the
+Insolator grows Farmer's Delight crops, Thermal and Mekanism process Forestry combs and AE2 crystals, the
+Metallurgic Infuser makes Redstone Arsenal's Flux, and a second Quarry recipe is paid in Thermal frames
+instead of diamonds. 12 items, 52 recipes; presets reach inside them (hard: Enderium in the alloy, Infused
+Alloy in the plate), because rules that hit the pack's own recipes are baked into the generated recipe
+instead of left to KubeJS.
+
+```
+$ packloom tune check
+tune.json (difficulty normal): 12 item(s), 52 recipe(s), removes 0, replaces inputs in 0 recipe(s), 19 integration(s)
+bridging ae2+mekanism, ae2+thermal, ae2+thermal_extra, bigreactors+mekanism, divinerpg+mekanism, divinerpg+redstone_arsenal,
+divinerpg+thermal, farmersdelight+mekanism, farmersdelight+thermal, forestry+mekanism, forestry+thermal, ...: OK
+$ packloom tune doc
+INTEGRATIONS.md: 19 integration(s)
+```
+
+The standard (how many, which kinds, what makes a bridge honest) is [integrations.md](integrations.md).
 
 ## 3. "It has to run on my laptop" → hardware profile
 

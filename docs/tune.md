@@ -25,6 +25,10 @@ edit `tune.json`, not them.
     { "type": "custom", "json": { "type": "thermal:pulverizer", "ingredient": {"item": "minecraft:cobblestone"},
                                   "result": [{"item": "minecraft:sand"}], "energy": 2000 } }
   ],
+  "integrations": [
+    { "id": "divine-ores-thermal", "title": "Thermal grinds Divine ores", "bridges": ["thermal", "divinerpg"], "tier": "early",
+      "why": "...", "items": [ ... ], "recipes": [ ... ], "remove": [], "replace_inputs": [] }
+  ],
   "remove": [ { "output": "mod:item" }, { "id": "mod:path/to/recipe" }, { "mod": "mod" } ],
   "replace_inputs": [ { "in": { "output": "mekanism:metallurgic_infuser" }, "from": "#forge:ingots/osmium", "to": "#forge:ingots/iron" } ],
   "presets": {
@@ -47,7 +51,7 @@ edit `tune.json`, not them.
 | `glow` | bool | enchanted shimmer |
 | `max_stack` | int | basic items |
 | `tooltip` | list of lines | |
-| `icon` | `{ "shape": blade \| ingot \| gem \| orb \| tool, "color": "#rrggbb" }` | a 16×16 placeholder PNG, written once; drop a real PNG at `overrides/kubejs/assets/<ns>/textures/item/<path>.png` and it is kept |
+| `icon` | `{ "shape": blade \| ingot \| gem \| orb \| tool \| dust \| plate, "color": "#rrggbb" }` | a 16×16 placeholder PNG, written once; drop a real PNG at `overrides/kubejs/assets/<ns>/textures/item/<path>.png` and it is kept |
 
 Items are never per preset: a world made on `easy` must still have every item on `hard`.
 
@@ -55,9 +59,19 @@ Items are never per preset: a world made on `easy` must still have every item on
 
 - `shaped`: `pattern` rows of single characters, `key` maps each to an item id or a `#tag`, `result`, `count`.
 - `shapeless`: `inputs` list, `result`, `count`.
-- `custom`: `json` is a raw recipe JSON (machine recipes of any mod); its type is passed through, every
-  `item`/`tag` reference inside is checked.
+- `custom`: `json` is a raw recipe JSON (machine recipes of any mod); its type is passed through. Every
+  `item` reference inside is checked; a `tag` is checked as an item tag unless it sits under a fluid or
+  chemical key (`chemicalInput`, `fluid`, ...), and an unknown one is a warning, not an error. Bare strings
+  (fluid ids, chemical ids, sounds) are not checked. Copy the shape from the mod's own recipe json in its jar.
 - `id`: optional recipe id; give one when another rule or a quest will refer to it.
+
+### integrations
+
+A bridge between mods, with everything it needs in one object: `id`, `title`, `bridges` (mod ids, at least
+two), `tier` (`early` | `mid` | `late`), `why`, and its own `items`, `recipes`, `remove`, `replace_inputs`.
+They are merged before the base lists and before any preset, so every difficulty has every integration.
+`tune check` prints which mod pairs are bridged; `tune doc` writes `INTEGRATIONS.md`. The standard (how many,
+which kinds, what makes a good one): [integrations.md](integrations.md).
 
 ### remove and replace_inputs
 
@@ -65,6 +79,13 @@ Filters are KubeJS's: `{"id": …}`, `{"mod": …}`, `{"output": …}`, `{"type"
 AND together. `tune check` runs the filter against the registry and prints how many recipes it hits, and fails
 when it hits none, so a rule that silently does nothing cannot ship. `replace_inputs` additionally requires
 that the matched recipes actually use `from`.
+
+A filter can also hit the pack's own recipes (`{"id": "techpack:smelt_fluxed_realmite"}` or
+`{"output": "techpack:osmic_arlemite_helmet"}`). Those hits are not left to KubeJS: `tune build` bakes them in,
+dropping a removed recipe from the script and swapping the input inside the generated recipe itself (shaped
+keys, shapeless inputs, or the `item`/`tag` entries of a custom json). That is how a difficulty preset reaches
+a Thermal or Mekanism machine recipe that KubeJS could not edit afterwards. `tune verify` counts them as
+added, not modified.
 
 ### presets and difficulty
 
@@ -84,6 +105,12 @@ Only vanilla recipe types (`minecraft:crafting_shaped`, `crafting_shapeless`, `s
 and `remove`. A mod's own type (QuarryPlus's `workbench_recipe`, Thermal machine recipes) may be matched by
 the registry yet ignored by KubeJS; `tune check` warns about it and `tune verify` compares counts after the
 run. For those, add a `custom` recipe of that type instead and remove the original by `id`.
+
+## INTEGRATIONS.md
+
+`packloom tune doc` writes `<pack>/INTEGRATIONS.md` from the `integrations` list: a table of bridged mod
+pairs, then each integration under its tier with items (name, id, kind, tooltip) and recipes as one line
+each. Ship it with the pack; it is the part of the design players actually read.
 
 ## registry.json
 

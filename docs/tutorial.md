@@ -43,12 +43,15 @@ packloom tune init --namespace mypack
 packloom registry
 ```
 
-Edit `tune.json`: a pack-only item, a recipe that joins two mods, input swaps for `easy` and `hard`
-([reference](tune.md)). Ids come from `registry.json` (`grep '"thermal:' registry.json | head`). Then:
+Edit `tune.json`: integrations (one object per bridge between two mods, with its items and recipes; the
+[standard](integrations.md) says how many and which kinds), input swaps for `easy` and `hard`
+([reference](tune.md)). Ids come from `registry.json` (`grep '"thermal:' registry.json | head`); machine recipe
+shapes come from the mod's own json inside its jar. Then:
 
 ```bash
 packloom tune build
 packloom build --server && packloom test --skip-build && packloom tune verify
+packloom tune doc          # INTEGRATIONS.md for the players
 ```
 
 ## 4. Play it

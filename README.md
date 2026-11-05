@@ -19,9 +19,10 @@ mods.txt + pack.json ──/pack-build──▶ TechPack-1.2.0.mrpack ──▶ 
         └──────── /pack-triage ◀── smoke-report.json, crash reports, script errors
 ```
 
-**Status: 0.2, built for one pack first** (TechPack: 1.20.1 Forge, 85 files, DivineRPG next to Thermal,
-Mekanism, AE2, bees, Farmer's Delight, Biomes O' Plenty). The catalog covers 1.20.1 Forge well and 1.20.1
-Fabric partly; every slug in it is verified against Modrinth by `catalog verify`.
+**Status: 0.3, built for one pack first** (TechPack: 1.20.1 Forge, 94 files, DivineRPG next to Thermal,
+Mekanism, AE2, bees, Farmer's Delight, Biomes O' Plenty, 19 integrations between the lines). The catalog
+holds 80 families of the popular 1.20.1 mods for Forge and most of them for Fabric; every slug in it is
+verified against Modrinth by `catalog verify`.
 
 ▶ **[Watch the terminal demo](docs/demo.md)** (half a minute, idle time compressed): design → hardware → tune → test → keys.
 
@@ -37,8 +38,8 @@ proposes, the human decides.
 
 | You say | Skill | What happens |
 |---|---|---|
-| "I want RPG and industry, farming, a nice world, no grind, with friends" | `/pack-design` | tags → families from the catalog → `mods.txt`, every slug verified on Modrinth for your game and loader; same-job families (Thermal vs Create) are picked by priority and the swap is one flag |
-| "Make it harder" / "the quarry should need a diamond block" / "a sword that combines DivineRPG and Thermal" | `/pack-tune` | `tune.json` holds items, recipes, removals, input swaps and `easy`/`normal`/`hard` presets; every id is checked against the registry (16 000 recipes, 8 800 items in TechPack) with "did you mean" hints; KubeJS scripts are generated, never hand-written |
+| "I want RPG and industry, farming, a nice world, no grind, with friends" | `/pack-design` | tags → families from a catalog of 80 (Thermal, Create, Mekanism, AE2, Immersive Engineering, the Aether, Ars Nouveau, Macaw's, Fresh Animations...) → `mods.txt`, every slug verified on Modrinth for your game and loader; same-job families (Thermal vs Create, AE2 vs Refined Storage) are picked by priority and the swap is one flag; quality of life, performance, balance (Almost Unified, Polymorph) and Faithful textures come by default |
+| "Make it harder" / "the quarry should need a diamond block" / "the lines should meet: a sword from DivineRPG and Thermal, Thermal machines that grind Divine ores" | `/pack-tune` | `tune.json` holds items, recipes, removals, input swaps, `easy`/`normal`/`hard` presets and **integrations** (self-contained bridges between mods, 16-24 per pack by the [standard](docs/integrations.md)); every id is checked against the registry (16 000 recipes, 8 800 items in TechPack) with "did you mean" hints; KubeJS scripts and `INTEGRATIONS.md` are generated, never hand-written |
 | "It has to run on my 16 GB M1" / "my friend has 8 GB" | `/pack-hardware` | heap, tier, shader preset, mod ceiling, Apple Silicon notes; `--apply` writes `memory_mb` and adds the performance family |
 | "Which key does what? B is taken twice" | `/pack-keys` | an interactive keyboard page from `options.txt`, conflicts in red, per-stage filters; `--apply` writes a layout back |
 | "Does it even start?" | `/pack-build`, `/pack-test`, `/pack-triage` | mrpack with hashes, headless server with the right Java, crash log → suspect mods, KubeJS script errors as suspects too |
@@ -58,7 +59,7 @@ packloom hardware --apply
 packloom build --server
 packloom test --accept-eula          # Minecraft EULA: a human decision, hence the flag
 packloom tune init --namespace mypack && packloom registry && packloom tune build
-packloom build --server && packloom test --skip-build && packloom tune verify
+packloom build --server && packloom test --skip-build && packloom tune verify && packloom tune doc
 packloom bundle                      # dist/MyPack-0.1.0-client and -server folders + zips
 ```
 
@@ -86,11 +87,11 @@ You get `/pack-init`, `/pack-design`, `/pack-add`, `/pack-build`, `/pack-test`, 
 
 ```
 mypack/
-  pack.json      { "name": "TechPack", "version": "1.2.0", "minecraft": "1.20.1", "loader": "forge",
+  pack.json      { "name": "TechPack", "version": "1.3.0", "minecraft": "1.20.1", "loader": "forge",
                    "loader_version": "recommended", "memory_mb": 6144, "hardware": {"ram_gb": 16, "gpu": "apple", "tier": "mid"} }
   mods.txt       one entry per line, comments with #
-  tune.json      items, recipes, presets -> overrides/kubejs (generated)
-  overrides/     config/, defaultconfigs/, kubejs/, options.txt, mods/ for jars that are not on Modrinth
+  tune.json      items, recipes, integrations, presets -> overrides/kubejs (generated) and INTEGRATIONS.md
+  overrides/     config/, defaultconfigs/, kubejs/, options.txt (resource packs on by default), mods/ for jars that are not on Modrinth
   registry.json  generated index of every item, tag, recipe in the jars
 ```
 
@@ -113,7 +114,8 @@ Required dependencies come from Modrinth automatically. Full syntax: `lib/packlo
 - [docs/tutorial.md](docs/tutorial.md): from an empty folder to friends playing
 - [docs/commands.md](docs/commands.md): every CLI command and flag
 - [docs/tune.md](docs/tune.md): `tune.json` reference and how difficulty presets work
-- [docs/catalog.md](docs/catalog.md): the catalog format and how to add a family
+- [docs/integrations.md](docs/integrations.md): the standard for bridging mods, and TechPack's 19
+- [docs/catalog.md](docs/catalog.md): the 80 families, groups, tags, and how to add one
 - [docs/demo.md](docs/demo.md): the recorded terminal session
 - [docs/README.uk.md](docs/README.uk.md): короткий посібник українською
 
@@ -126,13 +128,14 @@ instance. ![keyboard map](docs/keybinds.jpg)
 ## What it will not do
 
 Download from CurseForge (their API needs a key and some authors forbid it; such mods are `manual:` lines),
-run the game client (Prism does that), or decide what is fun. The catalog is an opinion: one family per job,
-few add-ons, no grind by default.
+run the game client (Prism does that), draw item textures (placeholders are generated, `INTEGRATIONS.md` lists
+what an artist should draw), or decide what is fun. The catalog is an opinion: one family per job, add-ons
+listed but not forced, no grind by default.
 
 ## Development
 
 ```bash
-python3 -m unittest discover -s tests          # 28 tests, stdlib unittest
+python3 -m unittest discover -s tests          # 34 tests, stdlib unittest
 PYTHONPATH=lib python3 -m packloom --help
 ```
 

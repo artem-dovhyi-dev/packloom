@@ -61,6 +61,7 @@ def build(pack: Pack, out: Optional[Path] = None, want_server: bool = False, log
              "dependencies": {"minecraft": pack.minecraft,
                               loaders.mrpack_dependency_key(pack.loader): loader_version},
              "files": files}
+    apply_visual_defaults(pack, files, log)
     out = out or pack.mrpack_path
     out.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
@@ -83,6 +84,39 @@ def build(pack: Pack, out: Optional[Path] = None, want_server: bool = False, log
         sync_server_mods(pack, files, log)
         sync_server_overrides(pack, log)
     return result
+
+
+SHADER_CONFIG = {"forge": "oculus.properties", "neoforge": "oculus.properties", "fabric": "iris.properties", "quilt": "iris.properties"}
+
+
+def apply_visual_defaults(pack: Pack, files: list[dict], log=print) -> dict:
+    """Resource packs and shader packs in the index are enabled by default: `resourcePacks:` in
+    overrides/options.txt lists every resourcepacks/ file (other lines are kept), and the shader loader's
+    config names the first shaderpacks/ file. Prism and the Modrinth app apply overrides on import, so a
+    friend who installs the mrpack sees the textures and shaders without touching a menu."""
+    packs = [Path(e["path"]).name for e in files if e["path"].startswith("resourcepacks/")]
+    shaders = [Path(e["path"]).name for e in files if e["path"].startswith("shaderpacks/")]
+    done = {}
+    if packs:
+        opts = pack.overrides / "options.txt"
+        lines = opts.read_text(encoding="utf-8").splitlines() if opts.exists() else []
+        value = "resourcePacks:" + json.dumps(["vanilla", "mod_resources"] + [f"file/{n}" for n in packs])
+        lines = [l for l in lines if not l.startswith("resourcePacks:")]
+        lines.insert(0, value)
+        opts.parent.mkdir(parents=True, exist_ok=True)
+        opts.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        done["resourcepacks"] = packs
+        log(f"  options.txt: resource packs on by default: {', '.join(packs)}")
+    if shaders:
+        cfg = pack.overrides / "config" / SHADER_CONFIG.get(pack.loader, "oculus.properties")
+        lines = cfg.read_text(encoding="utf-8").splitlines() if cfg.exists() else []
+        lines = [l for l in lines if not l.startswith(("shaderPack=", "enableShaders="))]
+        lines = [f"shaderPack={shaders[0]}", "enableShaders=true"] + lines
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        done["shaderpack"] = shaders[0]
+        log(f"  {cfg.name}: shader pack on by default: {shaders[0]}")
+    return done
 
 
 def write_report(pack: Pack, result: BuildResult, res: modrinth.Resolution) -> None:

@@ -4,7 +4,10 @@ from __future__ import annotations
 import json
 import os
 import re
+import queue
+import signal
 import subprocess
+import threading
 import time
 import zipfile
 from pathlib import Path
@@ -78,31 +81,58 @@ def mod_ids_from_jars(mods_dir: Path) -> set:
     return ids
 
 
+def _kill_group(proc: subprocess.Popen) -> None:
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        proc.kill()
+
+
 def smoke_test(pack: Pack, java: Path, timeout: int = 900, log=print) -> dict:
     sdir = pack.server_dir
     if not eula_accepted(pack):
         raise RuntimeError("server/eula.txt lacks eula=true; accept Minecraft's EULA with --accept-eula")
     env = dict(os.environ, PATH=f"{java.parent}:{os.environ['PATH']}", JAVA_HOME=str(java.parent.parent))
     start = time.time()
+    # its own process group: run.sh spawns java, and a JVM that a mod keeps alive after `stop` must die with it
     proc = subprocess.Popen(server_command(pack), cwd=sdir, env=env, stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    lines, ok = [], False
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1,
+                            start_new_session=True)
+    lines, ok, stopped_at = [], False, None
+    q: queue.Queue = queue.Queue()
+    reader = threading.Thread(target=lambda: ([q.put(l) for l in proc.stdout], q.put(None)), daemon=True)
+    reader.start()
     try:
-        for line in proc.stdout:
-            lines.append(line.rstrip("\n"))
-            if "Done (" in line and "For help" in line:
-                ok = True
-                proc.stdin.write("stop\n")
-                proc.stdin.flush()
+        while True:
+            try:
+                line = q.get(timeout=5)
+            except queue.Empty:
+                line = ""
+            if line is None:
+                break
+            if line:
+                lines.append(line.rstrip("\n"))
+                if "Done (" in line and "For help" in line and not stopped_at:
+                    ok = True
+                    stopped_at = time.time()
+                    proc.stdin.write("stop\n")
+                    proc.stdin.flush()
+            if stopped_at and time.time() - stopped_at > 90 and proc.poll() is None:
+                log("server did not exit 90 s after `stop`; killing it (a mod keeps the JVM alive)")
+                lines.append("[packloom] server did not exit 90 s after stop; killed")
+                _kill_group(proc)
+                break
             if time.time() - start > timeout:
                 log("timeout, killing server")
-                proc.kill()
+                _kill_group(proc)
+                break
+            if proc.poll() is not None and q.empty():
                 break
     finally:
         try:
-            proc.wait(timeout=120)
+            proc.wait(timeout=30)
         except subprocess.TimeoutExpired:
-            proc.kill()
+            _kill_group(proc)
     seconds = round(time.time() - start)
     (pack.dir / "smoke-test.log").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

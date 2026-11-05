@@ -164,8 +164,19 @@ class CatalogTests(unittest.TestCase):
         prop = catalog.design(self.cat, "1.20.1", "forge", ["tech", "visual"], tier="low", include=["create"])
         ids = [p.family["id"] for p in prop.picks]
         self.assertIn("create", ids); self.assertNotIn("thermal", ids)
-        self.assertNotIn("visual", ids)                     # heavy on a low tier
-        self.assertIn(("visual", "heavy for a low-tier machine"), prop.skipped)
+        self.assertNotIn("shaders", ids)                    # heavy on a low tier
+        self.assertIn(("shaders", "heavy for a low-tier machine"), prop.skipped)
+        self.assertIn("textures", ids)                      # light and default: Faithful ships on every tier
+        self.assertIn("balance", ids)
+
+    def test_extras_are_listed_not_picked(self):
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["tech", "rpg"], tier="high")
+        ids = [p.family["id"] for p in prop.picks]
+        self.assertNotIn("ie", ids); self.assertNotIn("aether", ids)         # extras: known, not chosen by a tag
+        self.assertIn(("ie", "Immersive Engineering", "tech"), prop.available)
+        self.assertLess(len(ids), 20)
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["tech"], tier="high", include=["ie"])
+        self.assertIn("ie", [p.family["id"] for p in prop.picks])
 
     def test_design_no_grind_and_avoid(self):
         prop = catalog.design(self.cat, "1.20.1", "forge", ["rpg", "magic"], avoid=["magic"], no_grind=True)
@@ -272,6 +283,67 @@ class TuneTests(unittest.TestCase):
             stamp = png.stat().st_mtime_ns
             tune.build(pack, self.IDX, self.DATA)
             self.assertEqual(png.stat().st_mtime_ns, stamp)   # an existing texture is never overwritten
+
+
+class IntegrationTests(unittest.TestCase):
+    IDX = json.loads(json.dumps(TuneTests.IDX))
+    IDX["item"].update({"c:ore": "", "c:ingot": "", "a:gear": ""})
+    DATA = {"namespace": "p", "difficulty": "normal",
+            "integrations": [
+                {"id": "dust", "title": "A pulverizes C", "bridges": ["a", "c"], "tier": "early", "why": "ore doubling",
+                 "items": [{"id": "p:c_dust", "name": "C Dust", "icon": {"shape": "dust", "color": "#aabbcc"}}],
+                 "recipes": [{"id": "p:c_dust", "type": "custom", "json": {"type": "a:pulverizer", "ingredient": {"item": "c:ore"},
+                                                                          "result": [{"item": "p:c_dust", "count": 2}]}},
+                             {"id": "p:c_smelt", "type": "custom", "json": {"type": "minecraft:smelting", "ingredient": {"item": "p:c_dust"}, "result": "c:ingot"}},
+                             {"id": "p:gear", "type": "shaped", "pattern": ["I", "C"], "key": {"I": "c:ingot", "C": "b:core"}, "result": "a:gear"}]},
+                {"id": "chem", "title": "B infuses", "bridges": ["b", "a"], "items": [],
+                 "recipes": [{"type": "custom", "json": {"type": "b:infusing", "chemicalInput": {"amount": 10, "tag": "b:carbon"},
+                                                         "itemInput": {"ingredient": {"item": "a:sword"}}, "output": {"item": "b:core"}}}]}],
+            "presets": {"hard": {"replace_inputs": [{"in": {"output": "a:gear"}, "from": "c:ingot", "to": "b:core"},
+                                                    {"in": {"id": "p:c_dust"}, "from": "c:ore", "to": "a:sword"}]},
+                        "easy": {"remove": [{"id": "p:c_smelt"}]}}}
+
+    def test_merge_check_and_doc(self):
+        rep = tune.check(self.DATA, self.IDX)
+        self.assertTrue(rep.ok, rep.errors)
+        self.assertEqual((rep.items, rep.recipes, rep.integrations, rep.bridges), (1, 4, 2, ["a+b", "a+c"]))
+        self.assertFalse(rep.warnings, rep.warnings)        # a chemical tag is not an item tag and is not checked
+        md = tune.doc(self.DATA)
+        self.assertIn("A pulverizes C", md); self.assertIn("c:ore -> p:c_dust x2 (a:pulverizer)", md); self.assertIn("| a + c |", md)
+
+    def test_rules_on_own_recipes_are_baked(self):
+        hard = tune.check(dict(self.DATA, difficulty="hard"), self.IDX)
+        self.assertTrue(hard.ok, hard.errors); self.assertEqual(hard.replaced, 0)   # nothing left for KubeJS to modify
+        eff = tune.bake(tune.effective(dict(self.DATA, difficulty="hard")), self.IDX, "p")
+        self.assertEqual(eff["replace_inputs"], [])
+        self.assertEqual(eff["recipes"][2]["key"], {"I": "b:core", "C": "b:core"})
+        self.assertEqual(eff["recipes"][0]["json"]["ingredient"], {"item": "a:sword"})
+        easy = tune.check(dict(self.DATA, difficulty="easy"), self.IDX)
+        self.assertTrue(easy.ok, easy.errors); self.assertEqual((easy.recipes, easy.removed), (3, 0))
+        self.assertNotIn('"p:c_smelt"', tune.server_script(tune.bake(tune.effective(dict(self.DATA, difficulty="easy")), self.IDX, "p")))
+
+    def test_integration_errors(self):
+        bad = json.loads(json.dumps(self.DATA)); bad["integrations"][0]["bridges"] = ["a"]
+        self.assertTrue(any("at least two" in e for e in tune.check(bad, self.IDX).errors))
+        bad = json.loads(json.dumps(self.DATA)); bad["integrations"][0]["bridges"] = ["a", "zzz"]
+        self.assertTrue(any("zzz" in w for w in tune.check(bad, self.IDX).warnings))
+        bad = json.loads(json.dumps(self.DATA)); bad["integrations"][1]["id"] = "dust"
+        self.assertTrue(any("used twice" in e for e in tune.check(bad, self.IDX).errors))
+
+
+class VisualDefaultsTests(unittest.TestCase):
+    def test_options_and_shader_config(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "pack.json").write_text(json.dumps({"name": "P", "version": "1", "minecraft": "1.20.1", "loader": "forge"}))
+            pack = load_pack(Path(d))
+            pack.overrides.mkdir(); (pack.overrides / "options.txt").write_text("renderDistance:10\nresourcePacks:[\"vanilla\"]\n")
+            files = [{"path": "resourcepacks/Faithful.zip"}, {"path": "shaderpacks/Comp.zip"}, {"path": "mods/x.jar"}]
+            done = build.apply_visual_defaults(pack, files, log=lambda *a: None)
+            self.assertEqual(done, {"resourcepacks": ["Faithful.zip"], "shaderpack": "Comp.zip"})
+            opts = (pack.overrides / "options.txt").read_text()
+            self.assertIn('resourcePacks:["vanilla", "mod_resources", "file/Faithful.zip"]', opts); self.assertIn("renderDistance:10", opts)
+            self.assertEqual(opts.count("resourcePacks:"), 1)
+            self.assertIn("shaderPack=Comp.zip\nenableShaders=true", (pack.overrides / "config" / "oculus.properties").read_text())
 
 
 class TriageKubeTests(unittest.TestCase):

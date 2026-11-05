@@ -261,6 +261,10 @@ def cmd_design(args):
             print("\nskipped:")
             for fid, why in prop.skipped:
                 print(f"  - {fid}: {why}")
+        if prop.available:
+            print("\nalso in the catalog for these tags (add one with --include <id>):")
+            for fid, title, tags in prop.available:
+                print(f"  - {fid}: {title} [{tags}]")
     lines = [l for p in prop.picks for l in p.lines]
     if args.verify:
         print(f"\nverifying {len(lines)} entries on Modrinth")
@@ -346,6 +350,12 @@ def cmd_tune(args):
         path = tune.init(pack, args.namespace or pack.name.lower().replace(" ", "_"))
         print(f"{path} ready; mods.txt: +{len(add)} ({', '.join(l.split()[0] for l in add) or 'nothing'}). Next: edit tune.json, then `tune build`.")
         return
+    if args.what == "doc":
+        data = tune.load(pack.dir / "tune.json")
+        out = pack.dir / "INTEGRATIONS.md"
+        out.write_text(tune.doc(data), encoding="utf-8")
+        print(f"{out}: {len(data.get('integrations', []))} integration(s)")
+        return
     if args.what == "verify":
         expected = tune.check(tune.load(pack.dir / "tune.json"), _registry(pack)) if (pack.dir / "tune.json").exists() else None
         v = tune.verify_logs(pack, expected)
@@ -374,7 +384,8 @@ def cmd_tune(args):
     else:
         data = tune.load(pack.dir / "tune.json")
         print(f"tune.json (difficulty {data.get('difficulty', 'normal')}): {rep.items} item(s), {rep.recipes} recipe(s), "
-              f"removes {rep.removed}, replaces inputs in {rep.replaced} recipe(s): {'OK' if rep.ok else 'ERRORS'}")
+              f"removes {rep.removed}, replaces inputs in {rep.replaced} recipe(s), {rep.integrations} integration(s)"
+              f"{' bridging ' + ', '.join(rep.bridges) if rep.bridges else ''}: {'OK' if rep.ok else 'ERRORS'}")
         for n in rep.notes:
             print("  " + n)
         for w in rep.warnings:
@@ -447,7 +458,7 @@ def main(argv=None):
     s.add_argument("--mods", help="jar folder (default: server/mods)"); s.add_argument("--out"); s.add_argument("--json", action="store_true")
 
     s = sub.add_parser("tune", help="tune.json -> KubeJS scripts, every id checked against the registry"); s.set_defaults(fn=cmd_tune)
-    s.add_argument("what", choices=["init", "check", "build", "verify"], nargs="?", default="build")
+    s.add_argument("what", choices=["init", "check", "build", "verify", "doc"], nargs="?", default="build")
     s.add_argument("--namespace", help="for init: namespace of new items"); s.add_argument("--difficulty", choices=list(tune.DIFFICULTIES), help="set the preset before building")
     s.add_argument("--json", action="store_true")
 

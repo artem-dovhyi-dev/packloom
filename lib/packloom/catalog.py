@@ -56,6 +56,7 @@ class Proposal:
     loader: str
     picks: list[Pick]
     skipped: list[tuple[str, str]]   # (family id, why)
+    available: list[tuple[str, str, str]] = field(default_factory=list)   # (family id, title, matched tags): extras not picked
 
     def mods_txt(self, name: str = "") -> str:
         out = [f"# {name or 'pack'}: written by `packloom design` for Minecraft {self.minecraft} {self.loader}.",
@@ -70,15 +71,18 @@ class Proposal:
         return {"minecraft": self.minecraft, "loader": self.loader,
                 "families": [{"id": p.family["id"], "title": p.family["title"], "reasons": p.reasons,
                               "warnings": p.warnings, "lines": p.lines} for p in self.picks],
-                "skipped": [{"id": i, "why": w} for i, w in self.skipped]}
+                "skipped": [{"id": i, "why": w} for i, w in self.skipped],
+                "available": [{"id": i, "title": t, "tags": g} for i, t, g in self.available]}
 
 
 def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: list[str] = (),
            tier: str = "high", include: list[str] = (), exclude: list[str] = (), addons: bool = True,
            no_grind: bool = False) -> Proposal:
-    """Pick families: every `default` family, every family that matches a wanted tag, plus `include`;
+    """Pick families: every `default` family, every `core` family that matches a wanted tag, plus `include`;
     drop `avoid` tags, `exclude` ids, families too heavy for the hardware tier, and the losers of each
-    exclusive `group` (highest priority wins). `no_grind` drops grind=high families unless included by id."""
+    exclusive `group` (highest priority wins). `no_grind` drops grind=high families unless included by id.
+    Families marked `"pick": "extra"` (the second Aether, the fifth magic mod) are never picked by a tag: the
+    catalog knows them so a person can ask for one by name (`--include`); they are listed as `available`."""
     want, avoid = set(want), set(avoid)
     unknown = (want | avoid) - set(catalog["tags"])
     if unknown:
@@ -86,6 +90,7 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
     max_w = WEIGHT.index(TIER_MAX_WEIGHT.get(tier, "heavy"))
     picks: list[Pick] = []
     skipped: list[tuple[str, str]] = []
+    available: list[tuple[str, str, str]] = []
     for fam in catalog["families"]:
         fid = fam["id"]
         lines = family_lines(fam, minecraft, loader, addons)
@@ -98,6 +103,10 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
             continue
         matched = want & set(fam["tags"])
         if not (forced or matched or fam.get("default")):
+            continue
+        if fam.get("pick", "core") == "extra" and not forced:
+            if not (avoid & set(fam["tags"])):
+                available.append((fid, fam["title"], ", ".join(sorted(matched))))
             continue
         if avoid & set(fam["tags"]) and not forced:
             skipped.append((fid, f"avoids {', '.join(sorted(avoid & set(fam['tags'])))}")); continue
@@ -128,7 +137,7 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
             picks.remove(loser)
             skipped.append((loser.family["id"], f"same job as {members[0].family['id']} ({group}); pass --include {loser.family['id']} to swap"))
     picks.sort(key=lambda p: -p.family.get("priority", 0))
-    return Proposal(minecraft, loader, picks, skipped)
+    return Proposal(minecraft, loader, picks, skipped, available)
 
 
 def verify(lines: list[str], minecraft: str, loader: str, log=print) -> list[tuple[str, str]]:

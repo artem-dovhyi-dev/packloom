@@ -12,14 +12,15 @@ Every command has `--help`.
 | `search <query> [--type mod\|resourcepack\|shader]` | Modrinth search for the pack's game and loader | |
 | `info <slug>` | project details and compatible versions | |
 | `hardware [--ram GB] [--gpu apple\|nvidia\|amd\|intel] [--apply]` | heap, tier, shaders, perf family | `pack.json` (`memory_mb`, `hardware`), `mods.txt` with `--apply` |
-| `build [--server] [--strict] [--out file]` | resolve mods.txt, fetch non-Modrinth jars, write the mrpack; `--server` syncs `server/mods`, `server/config`, `server/defaultconfigs`, `server/kubejs` | `<Name>-<ver>.mrpack`, `build-report.md/.json`, `overrides/mods/*` |
+| `build [--server] [--strict] [--out file]` | resolve mods.txt, fetch non-Modrinth jars, enable resource and shader packs by default, write the mrpack; `--server` syncs `server/mods`, `server/config`, `server/defaultconfigs`, `server/kubejs` | `<Name>-<ver>.mrpack`, `build-report.md/.json`, `overrides/mods/*`, `overrides/options.txt` (`resourcePacks:`), `overrides/config/oculus.properties` or `iris.properties` |
 | `test [--skip-build] [--accept-eula] [--timeout s] [--java path]` | install the loader server, run it headless until `Done`, triage the log | `server/`, `smoke-test.log`, `smoke-report.json` |
 | `triage [--client] [--log f] [--crash f]` | suspect mods from a log or crash report (`--client`: the Prism instance's) | |
 | `registry [--mods dir] [--out f]` | index items, blocks, entities, dimensions, item tags, recipes from `server/mods` plus the vanilla and loader jars | `registry.json` |
 | `tune init [--namespace ns]` | add KubeJS and Rhino to mods.txt, write a `tune.json` skeleton | `tune.json`, `mods.txt` |
-| `tune check [--difficulty d]` | validate `tune.json` against `registry.json` | (`--difficulty` writes the preset into tune.json) |
+| `tune check [--difficulty d]` | validate `tune.json` against `registry.json`; prints which mod pairs the integrations bridge | (`--difficulty` writes the preset into tune.json) |
 | `tune build [--difficulty d]` | check, then write the KubeJS scripts and placeholder icons | `overrides/kubejs/startup_scripts/packloom.items.js`, `server_scripts/packloom.tune.js`, `assets/<ns>/textures/item/*.png` |
 | `tune verify` | after a server run: did KubeJS load the scripts, how many recipes changed, any script errors | |
+| `tune doc` | the integrations of `tune.json` as a page for players | `INTEGRATIONS.md` |
 | `keys [--options f] [--notes keybinds.json] [--apply]` | keyboard map from the instance's `options.txt` | `keybinds.html`; `options.txt` with `--apply` |
 | `prism` | locate the Prism instance for this pack | |
 | `bundle [client\|server\|both] [--out dir]` | folders for friends (mrpack, docs, keybinds.html) and for a host (mods, configs, kubejs, start.sh) + zips | `dist/` |

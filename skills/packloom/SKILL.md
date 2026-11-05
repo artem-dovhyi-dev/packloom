@@ -10,7 +10,7 @@ user-invocable: false
 <pack>/
   pack.json          name, version, minecraft, loader, loader_version, memory_mb, hardware (from `hardware --apply`)
   mods.txt           one entry per line; Modrinth slugs, ftb:, url:, manual:; comments with #
-  tune.json          recipes, pack-only items, difficulty presets -> KubeJS scripts (`tune build`)
+  tune.json          recipes, pack-only items, integrations between mods, difficulty presets -> KubeJS scripts (`tune build`), INTEGRATIONS.md (`tune doc`)
   overrides/         copied verbatim into the instance: config/, defaultconfigs/, kubejs/, mods/ (non-Modrinth jars), options.txt
   registry.json      every item, tag, recipe, entity, dimension in the jars (`registry`); what `tune` and quest generators check against
   <Name>-<ver>.mrpack  build output: modrinth.index.json (download links + hashes) + overrides/
@@ -19,7 +19,8 @@ user-invocable: false
 ```
 
 Workflow: words → `/pack-design` → `mods.txt` → `/pack-build` → `/pack-test` → `/pack-triage` on failure → repeat.
-Recipes and difficulty: `tune.json` → `/pack-tune` (`tune build`) → `/pack-build` → `/pack-test` → `tune verify`.
+Recipes, integrations and difficulty: `tune.json` → `/pack-tune` (`tune build`) → `/pack-build` → `/pack-test` → `tune verify` → `tune doc`.
+A pack with two lines (tech and RPG, say) should bridge them: 16-24 integrations by `docs/integrations.md`.
 Machine: `/pack-hardware` sets `memory_mb` and the performance family.
 The client (Prism Launcher) imports the mrpack; the server test runs the same jars headless, which catches
 most load-time conflicts and every KubeJS script error, but not rendering or shader problems.
@@ -32,5 +33,8 @@ Facts that save time:
 - Forge 1.20.1 needs Java 17; 1.20.5+ needs Java 21. `pack-test` picks the right one.
 - Prism keeps instances in `~/Library/Application Support/PrismLauncher/instances/<name>/minecraft/` on macOS.
 - Ids come from `registry.json`, never from memory: slugs, item ids and tags that "should exist" often do not.
-- The catalog (`catalog/families.json`) is the source of what goes together; add a family there rather than
-  hard-coding a list in a conversation, and run `catalog verify` on it.
+- The catalog (`catalog/families.json`, 80 families of the popular 1.20.1 mods) is the source of what goes
+  together; add a family there rather than hard-coding a list in a conversation, and run `catalog verify` on it.
+- Resource packs and shader packs in mods.txt are shipped enabled: `build` writes `overrides/options.txt`
+  (`resourcePacks:`) and the Oculus/Iris config. Quality of life, performance, balance (Almost Unified,
+  Polymorph) and Faithful textures are default families of every `design` proposal.

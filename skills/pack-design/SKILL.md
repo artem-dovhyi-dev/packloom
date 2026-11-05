@@ -13,8 +13,14 @@ command picks families from tags; you turn the person's words into tags.
 
 1. Read the request and map it to tags. `python3 ${CLAUDE_SKILL_DIR}/scripts/run.py catalog tags` lists them.
    Typical mapping: "industry, machines, automation" → `tech`; "dimensions, bosses, RPG" → `rpg`;
-   "farming, bees" → `farming`; "food" → `food`; "pretty world, biomes" → `worldgen`; "with friends" → `coop`;
-   "magic" → `magic`. Shaders and textures are `visual`. `qol` and `perf` come by default.
+   "dungeons, exploring, structures" → `adventure`; "fighting should feel good" → `combat`; "animals,
+   dragons" → `mobs`; "farming, bees" → `farming`; "food" → `food`; "pretty world, biomes" → `worldgen`;
+   "building, furniture" → `decor`; "seasons, thirst" → `survival`; "with friends" → `coop`; "magic" →
+   `magic`. Shaders, animations and sound are `visual`. `qol`, `perf`, `balance` (Almost Unified +
+   Polymorph), `logistics` and `textures` (Faithful 32x) come by default.
+   When the person names a mod ("like Immersive Engineering", "the Aether", "Macaw's"), find its family with
+   `catalog show --family <part of the name>` and pass `--include <id>`; 80 families cover the popular mods of
+   1.20.1, and a family in the same `group` as the default is swapped by `--include`.
 2. Hardware: if they mention their machine, pass `--ram <GB> --gpu apple|nvidia|amd|intel`; if it is this
    machine, `--detect`. A low tier drops heavy families (Create, shaders); say so.
 3. Grind: "not much grind", "busy person" → `--no-grind`. That drops grind=high families (DivineRPG);
@@ -25,9 +31,11 @@ command picks families from tags; you turn the person's words into tags.
 python3 ${CLAUDE_SKILL_DIR}/scripts/run.py design --minecraft 1.20.1 --loader forge --want tech,rpg,farming,worldgen,coop --no-grind --include divinerpg --ram 16 --gpu apple
 ```
 
-   The output lists every family with the reason it is in, warnings (grindy, heavy) and the skipped ones with
-   why (`create: same job as thermal; pass --include create to swap`). Discuss swaps with the person; the
-   choice between two families that do the same job is theirs.
+   The output lists every family with the reason it is in, warnings (grindy, heavy), the skipped ones with
+   why (`create: same job as thermal; pass --include create to swap`), and "also in the catalog for these
+   tags": the extra families a tag does not pick (Immersive Engineering, the Aether, Occultism...). Read that
+   list against what the person said; when they named one of those or something like it, add `--include`.
+   Discuss swaps with the person; the choice between two families that do the same job is theirs.
 5. Write it: `init` the pack if there is none, then `design ... --verify --write` (`--force` to replace an
    existing mods.txt). `--verify` asks Modrinth for a version of every slug for this game and loader and
    refuses to write while one is missing. Then `/pack-build` and `/pack-test`.

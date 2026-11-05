@@ -1,19 +1,24 @@
 {
-  "$schema": "families: one entry per family of mods that does one job. `mods` and `addons` are keyed by `<minecraft>/<loader>` and hold mods.txt lines (full mods.txt syntax). See docs/catalog.md.",
+  "$schema": "families: one entry per family of mods that does one job. `mods` and `addons` are keyed by `<minecraft>/<loader>` and hold mods.txt lines (full mods.txt syntax). Families in one `group` do the same job; the highest priority wins. See docs/catalog.md.",
   "tags": {
     "tech": "machines, energy, automation",
     "storage": "digital or bulk storage, pipes, logistics",
     "magic": "spells, mana, rituals",
     "rpg": "new dimensions, bosses, gear progression",
-    "adventure": "structures, dungeons, exploration",
+    "adventure": "structures, dungeons, exploration, vehicles",
+    "combat": "how fighting feels: combos, dodges, new weapons",
+    "mobs": "new creatures, dragons, villagers that matter",
+    "survival": "seasons, temperature, thirst",
     "farming": "crops, animals, bees, automated farms",
     "food": "cooking and meals",
-    "worldgen": "biomes and terrain",
+    "worldgen": "biomes, terrain, structures",
+    "decor": "building blocks, furniture, chisels",
     "coop": "teams, shared progress, voice, map",
     "quests": "a quest book that leads the player",
-    "qol": "recipes viewer, tooltips, backpacks, small conveniences",
+    "qol": "recipes viewer, tooltips, inventory sorting, backpacks, small conveniences",
+    "balance": "one ingot per metal across mods, conflicting recipes resolved",
     "perf": "runs faster, no gameplay change",
-    "visual": "textures and shaders",
+    "visual": "textures, shaders, animations, sound",
     "tune": "lets the pack author change recipes and add items"
   },
   "families": [
@@ -183,7 +188,8 @@
       "pairs_with": [
         "thermal",
         "mekanism"
-      ]
+      ],
+      "group": "storage-core"
     },
     {
       "id": "reactors",
@@ -204,7 +210,8 @@
       "pairs_with": [
         "mekanism",
         "thermal"
-      ]
+      ],
+      "group": "reactors-core"
     },
     {
       "id": "quarry",
@@ -266,6 +273,40 @@
         ],
         "1.20.1/fabric": [
           "storagedrawers"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "sophisticated-storage",
+            "chests and barrels with upgrades"
+          ],
+          [
+            "functional-storage",
+            "drawers with controllers; pick it or Storage Drawers"
+          ],
+          [
+            "modular-routers",
+            "programmable item routers"
+          ],
+          [
+            "xnet",
+            "one cable for items, fluids, energy with per-channel control"
+          ],
+          [
+            "iron-furnaces",
+            "faster furnaces from iron to netherite"
+          ],
+          [
+            "toms-storage",
+            "one terminal over all your chests; the storage network before AE2"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "toms-storage",
+            "one terminal over all your chests; the storage network before AE2"
+          ]
         ]
       }
     },
@@ -372,6 +413,10 @@
           [
             "mystian-apiary",
             "27-bee multiblock with ME interface"
+          ],
+          [
+            "the-bumblezone",
+            "a bee dimension behind beehives"
           ]
         ]
       }
@@ -394,6 +439,25 @@
         ],
         "1.20.1/fabric": [
           "farmers-delight-fabric"
+        ]
+      },
+      "group": "food-core",
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "farmers-respite",
+            "tea and coffee"
+          ],
+          [
+            "cooking-for-blockheads",
+            "a kitchen that crafts from its own storage"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "cooking-for-blockheads",
+            "a kitchen that crafts from its own storage"
+          ]
         ]
       }
     },
@@ -430,6 +494,68 @@
           "yungs-better-dungeons",
           "yungs-better-strongholds",
           "natures-compass"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "yungs-better-end-island",
+            "rebuilt End island"
+          ],
+          [
+            "yungs-better-witch-huts",
+            ""
+          ],
+          [
+            "yungs-better-ocean-monuments",
+            ""
+          ],
+          [
+            "yungs-better-desert-temples",
+            ""
+          ],
+          [
+            "yungs-better-jungle-temples",
+            ""
+          ],
+          [
+            "nullscape",
+            "a proper End, Stellar-style"
+          ],
+          [
+            "incendium",
+            "a proper Nether, Stellar-style"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "yungs-better-end-island",
+            "rebuilt End island"
+          ],
+          [
+            "yungs-better-witch-huts",
+            ""
+          ],
+          [
+            "yungs-better-ocean-monuments",
+            ""
+          ],
+          [
+            "yungs-better-desert-temples",
+            ""
+          ],
+          [
+            "yungs-better-jungle-temples",
+            ""
+          ],
+          [
+            "nullscape",
+            "a proper End, Stellar-style"
+          ],
+          [
+            "incendium",
+            "a proper Nether, Stellar-style"
+          ]
         ]
       }
     },
@@ -468,6 +594,28 @@
           "waystones",
           "comforts"
         ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "ping-wheel",
+            "point at things for your friends"
+          ],
+          [
+            "no-chat-reports",
+            "no chat reporting, no signing warnings"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "ping-wheel",
+            "point at things for your friends"
+          ],
+          [
+            "no-chat-reports",
+            "no chat reporting, no signing warnings"
+          ]
+        ]
       }
     },
     {
@@ -480,25 +628,73 @@
       "default": true,
       "grind": "low",
       "weight": "light",
-      "summary": "recipe viewer, ore and drop tables, block info on screen, in-game manuals, backpacks, food tooltips, drag over slots, a trash block",
+      "summary": "recipe viewer, ore and drop tables, block info on screen, in-game manuals, inventory sorting and one-click transfers, keybind search, enchantment tooltips, backpacks, food tooltips, drag over slots, a trash block",
       "when": "always",
       "mods": {
         "1.20.1/forge": [
-          "jei",
+          "jei@15.74.0.234   # Polymorph (balance) needs 15.57+; newer JEI builds are marked beta on Modrinth",
           "just-enough-resources-jer",
           "jade",
           "patchouli",
+          "inventory-profiles-next   # sort, move all, Inventory Tweaks reborn",
+          "controlling   # search and fix keybinds",
+          "enchantment-descriptions",
           "sophisticated-backpacks",
           "appleskin",
           "mouse-tweaks",
           "trash-cans"
         ],
         "1.20.1/fabric": [
-          "jei",
+          "jei@15.74.0.234   # Polymorph (balance) needs 15.57+; newer JEI builds are marked beta on Modrinth",
           "jade",
           "patchouli",
+          "inventory-profiles-next   # sort, move all, Inventory Tweaks reborn",
+          "controlling   # search and fix keybinds",
+          "enchantment-descriptions",
           "appleskin",
           "mouse-tweaks"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "crafting-tweaks",
+            "balance, clear and rotate buttons in the crafting grid"
+          ],
+          [
+            "better-advancements",
+            "a readable advancements screen"
+          ],
+          [
+            "just-enough-professions-jep",
+            "villager trades in JEI"
+          ],
+          [
+            "jade-addons-forge",
+            "Jade info for machines"
+          ],
+          [
+            "carry-on",
+            "pick up chests, machines and mobs by hand"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "crafting-tweaks",
+            "balance, clear and rotate buttons in the crafting grid"
+          ],
+          [
+            "better-advancements",
+            "a readable advancements screen"
+          ],
+          [
+            "just-enough-professions-jep",
+            "villager trades in JEI"
+          ],
+          [
+            "carry-on",
+            "pick up chests, machines and mobs by hand"
+          ]
         ]
       }
     },
@@ -526,7 +722,8 @@
           "canary",
           "clumps",
           "spark",
-          "chunky"
+          "chunky",
+          "memoryleakfix"
         ],
         "1.20.1/fabric": [
           "sodium",
@@ -539,31 +736,1370 @@
           "modernfix",
           "clumps",
           "spark",
-          "chunky"
+          "chunky",
+          "memoryleakfix"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "saturn",
+            "less memory for item stacks"
+          ]
         ]
       }
     },
     {
-      "id": "visual",
-      "title": "Textures and shaders",
+      "id": "refined-storage",
+      "title": "Refined Storage",
+      "tags": [
+        "tech",
+        "storage"
+      ],
+      "group": "storage-core",
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "digital storage without channels; simpler than AE2, less autocrafting depth",
+      "when": "when AE2's channels and inscriber feel like homework",
+      "mods": {
+        "1.20.1/forge": [
+          "refined-storage"
+        ]
+      },
+      "pairs_with": [
+        "thermal",
+        "mekanism"
+      ],
+      "pick": "extra"
+    },
+    {
+      "id": "ie",
+      "title": "Immersive Engineering",
+      "tags": [
+        "tech"
+      ],
+      "priority": 7,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "multiblocks you build by hand, wires on poles, diesel, excavator; the industrial look",
+      "when": "a tech line with an aesthetic; slower than Thermal, pairs with it through Almost Unified",
+      "mods": {
+        "1.20.1/forge": [
+          "immersiveengineering"
+        ]
+      },
+      "pairs_with": [
+        "thermal",
+        "balance"
+      ],
+      "pick": "extra"
+    },
+    {
+      "id": "industrial-foregoing",
+      "title": "Industrial Foregoing",
+      "tags": [
+        "tech",
+        "farming"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "plant gatherers, mob slaughter, laser drill, black hole units; automation of everything organic",
+      "when": "mid game, once you have 1k RF/t to spare",
+      "mods": {
+        "1.20.1/forge": [
+          "industrial-foregoing"
+        ]
+      },
+      "pairs_with": [
+        "thermal",
+        "mekanism"
+      ],
+      "pick": "extra"
+    },
+    {
+      "id": "powah",
+      "title": "Powah",
+      "tags": [
+        "tech"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "energy only: reactors, solar panels, thermo generators, wireless energizing; small and clean",
+      "when": "when a pack needs generators without another whole machine line",
+      "mods": {
+        "1.20.1/forge": [
+          "powah"
+        ],
+        "1.20.1/fabric": [
+          "powah"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "pneumaticcraft",
+      "title": "PneumaticCraft",
+      "tags": [
+        "tech"
+      ],
+      "priority": 4,
+      "grind": "high",
+      "weight": "medium",
+      "summary": "pressure instead of RF: drones you program, pressure chambers, refineries, plastic",
+      "when": "a second tech line for people who liked the first one; steep",
+      "mods": {
+        "1.20.1/forge": [
+          "pneumaticcraft-repressurized"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "space",
+      "title": "Ad Astra",
+      "tags": [
+        "tech",
+        "adventure"
+      ],
+      "priority": 6,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "rockets, five planets and moons, space stations, oxygen and temperature",
+      "when": "late game goal for a tech pack; needs a lot of steel",
+      "mods": {
+        "1.20.1/forge": [
+          "ad-astra"
+        ],
+        "1.20.1/fabric": [
+          "ad-astra"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "draconic",
+      "title": "Draconic Evolution",
+      "tags": [
+        "tech",
+        "rpg"
+      ],
+      "priority": 4,
+      "grind": "high",
+      "weight": "medium",
+      "summary": "draconium, the endgame armor and energy core, the Chaos Guardian",
+      "when": "the last chapter of a long tech pack; grindy and overpowered by design",
+      "mods": {
+        "1.20.1/forge": [
+          "draconic-evolution"
+        ]
+      },
+      "tune_hint": "raise draconium ore counts or add a dust recipe for it",
+      "pick": "extra"
+    },
+    {
+      "id": "enderio",
+      "title": "Ender IO",
+      "tags": [
+        "tech"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "conduits, capacitor banks, alloy smelter, SAG mill; the 1.12 classic rebuilt (6.x, beta on 1.20.1)",
+      "when": "if the player remembers Ender IO; expect beta quirks",
+      "mods": {
+        "1.20.1/forge": [
+          "enderio"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "tinkers",
+      "title": "Tinkers' Construct",
+      "tags": [
+        "tech",
+        "rpg"
+      ],
+      "group": "tools-forge",
+      "priority": 8,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "tools and armor you cast from parts, smeltery, modifiers; replaces vanilla tools for most players",
+      "when": "early game; shapes the whole pack's progression",
+      "mods": {
+        "1.20.1/forge": [
+          "tinkers-construct"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "silent-gear",
+      "title": "Silent Gear",
+      "tags": [
+        "tech",
+        "rpg"
+      ],
+      "group": "tools-forge",
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "gear from any material with parts and traits; lighter than Tinkers",
+      "when": "when Tinkers is too much",
+      "mods": {
+        "1.20.1/forge": [
+          "silent-gear"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "crops",
+      "title": "Resource crops",
+      "tags": [
+        "farming",
+        "tech"
+      ],
+      "priority": 6,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "Mystical Agriculture: grow iron, diamonds and mod materials; Botany Pots grow anything in one block",
+      "when": "mid game; a farming answer to the quarry",
+      "mods": {
+        "1.20.1/forge": [
+          "mystical-agriculture"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "botany-pots",
+            "one-block farms"
+          ]
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "occultism",
+      "title": "Occultism",
+      "tags": [
+        "magic"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "summon spirits that mine, craft and carry; a dimensional storage; rituals with a book",
+      "when": "a magic line that automates like a tech one",
+      "mods": {
+        "1.20.1/forge": [
+          "occultism"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "blood-magic",
+      "title": "Blood Magic",
+      "tags": [
+        "magic"
+      ],
+      "priority": 6,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "an altar fed with blood, sigils, rituals, living armor",
+      "when": "dark theme; grindy early",
+      "mods": {
+        "1.20.1/forge": [
+          "blood-magic"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "irons-spells",
+      "title": "Iron's Spells 'n Spellbooks",
+      "tags": [
+        "magic",
+        "combat",
+        "rpg"
+      ],
+      "priority": 8,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "spells with schools and levels, wizard towers and bosses, spellbooks and mana",
+      "when": "the most played spell mod of 1.20; RPG feel",
+      "mods": {
+        "1.20.1/forge": [
+          "irons-spells-n-spellbooks"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "hexerei",
+      "title": "Hexerei",
+      "tags": [
+        "magic"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "witchcraft: brooms, crows, candles, a book of shadows",
+      "when": "atmosphere first, progression second",
+      "mods": {
+        "1.20.1/forge": [
+          "hexerei"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "malum",
+      "title": "Malum",
+      "tags": [
+        "magic"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "spirit magic: soul extraction, arcane forging, beautiful effects",
+      "when": "a focused, pretty magic line",
+      "mods": {
+        "1.20.1/forge": [
+          "malum"
+        ],
+        "1.20.1/fabric": [
+          "malum"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "forbidden-arcanus",
+      "title": "Forbidden and Arcanus",
+      "tags": [
+        "magic"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Hephaestus Forge, dark matter, arcane crystals; small and polished",
+      "when": "a light touch of magic next to a tech pack",
+      "mods": {
+        "1.20.1/forge": [
+          "forbidden-arcanus"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "mahou",
+      "title": "Mahou Tsukai",
+      "tags": [
+        "magic"
+      ],
+      "priority": 3,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "circles drawn with blood, projection, bounded fields; anime magic",
+      "when": "for people who know what Mahou Tsukai is",
+      "mods": {
+        "1.20.1/forge": [
+          "mahou-tsukai"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "mana-artifice",
+      "title": "Mana and Artifice",
+      "tags": [
+        "magic"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "factions, spell crafting, rituals, constructs",
+      "when": "a full magic progression",
+      "mods": {
+        "1.20.1/forge": [
+          "mana-and-artifice"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "evilcraft",
+      "title": "EvilCraft",
+      "tags": [
+        "magic"
+      ],
+      "priority": 3,
+      "grind": "low",
+      "weight": "light",
+      "summary": "blood as a fluid, dark tanks, vengeance spirits",
+      "when": "the other dark magic line",
+      "mods": {
+        "1.20.1/forge": [
+          "evilcraft"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "apotheosis",
+      "title": "Apotheosis",
+      "tags": [
+        "rpg"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "affixed gear with rarities, boss mobs, a deeper enchanting table, spawner tweaks",
+      "when": "turns vanilla loot into an RPG; changes feel across the whole pack",
+      "mods": {
+        "1.20.1/forge": [
+          "apotheosis"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "artifacts",
+      "title": "Artifacts",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "trinkets found in chests: boots, gloves, charms in Curios slots",
+      "when": "any adventure pack; no progression of its own",
+      "mods": {
+        "1.20.1/forge": [
+          "artifacts"
+        ],
+        "1.20.1/fabric": [
+          "artifacts"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "aether",
+      "title": "The Aether",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "the sky dimension: islands, dungeons, moas; the oldest dimension mod",
+      "when": "a gentle second dimension; early access",
+      "mods": {
+        "1.20.1/forge": [
+          "aether"
+        ],
+        "1.20.1/fabric": [
+          "aether"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "undergarden",
+      "title": "The Undergarden",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "a dark underground dimension with its own biomes, ores and bosses",
+      "when": "mid game dimension",
+      "mods": {
+        "1.20.1/forge": [
+          "the-undergarden"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "deeper-darker",
+      "title": "Deeper and Darker",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "the Otherside below the deep dark; warden-themed gear",
+      "when": "once the player has met the Warden",
+      "mods": {
+        "1.20.1/forge": [
+          "deeperdarker"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "blue-skies",
+      "title": "Blue Skies",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "two dimensions, Everbright and Everdawn, with dungeons and bosses",
+      "when": "a second RPG line lighter than DivineRPG",
+      "mods": {
+        "1.20.1/forge": [
+          "blue-skies"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "alexs-caves",
+      "title": "Alex's Caves",
+      "tags": [
+        "rpg",
+        "adventure",
+        "worldgen"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "five huge cave biomes with their own mobs, blocks and bosses",
+      "when": "spectacular; heavy on the client; new chunks only",
+      "mods": {
+        "1.20.1/forge": [
+          "alexs-caves"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "bosses",
+      "title": "Bosses",
+      "tags": [
+        "rpg",
+        "combat"
+      ],
+      "priority": 6,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "L_Ender's Cataclysm: dungeons with real bosses; Mowzie's Mobs: a few hand-animated bosses and mobs",
+      "when": "when the pack needs fights that take a plan",
+      "mods": {
+        "1.20.1/forge": [
+          "l_enders-cataclysm",
+          "mowzies-mobs"
+        ],
+        "1.20.1/fabric": [
+          "bosses-of-mass-destruction"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "dragons",
+      "title": "Ice and Fire",
+      "tags": [
+        "mobs",
+        "rpg"
+      ],
+      "priority": 5,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "dragons you fight, tame and ride; sea serpents, hippogryphs, cyclopes",
+      "when": "beta on 1.20.1; a whole pack theme by itself",
+      "mods": {
+        "1.20.1/forge": [
+          "ice-and-fire-dragons"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "alexs-mobs",
+      "title": "Alex's Mobs",
+      "tags": [
+        "mobs"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "90 animals with real behaviour and drops that matter",
+      "when": "any pack that wants a living world",
+      "mods": {
+        "1.20.1/forge": [
+          "alexs-mobs"
+        ]
+      }
+    },
+    {
+      "id": "naturalist",
+      "title": "Naturalist",
+      "tags": [
+        "mobs"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "quiet, pretty animals: deer, bears, snakes, butterflies",
+      "when": "when Alex's Mobs is too much",
+      "mods": {
+        "1.20.1/forge": [
+          "naturalist"
+        ],
+        "1.20.1/fabric": [
+          "naturalist"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "villages",
+      "title": "Villages that matter",
+      "tags": [
+        "mobs",
+        "adventure"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Guard Villagers defend; Easy Villagers make trading and breeding one block",
+      "when": "any pack with villages",
+      "mods": {
+        "1.20.1/forge": [
+          "guard-villagers",
+          "easy-villagers"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "structures",
+      "title": "Structures",
+      "tags": [
+        "adventure",
+        "worldgen"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "When Dungeons Arise: big dungeons; Towns and Towers + ChoiceTheorem's villages: rebuilt villages; Dungeons and Taverns: small vanilla-style builds",
+      "when": "new chunks only; pairs with the worldgen family",
+      "mods": {
+        "1.20.1/forge": [
+          "when-dungeons-arise",
+          "towns-and-towers",
+          "ct-overhaul-village",
+          "dungeons-and-taverns"
+        ],
+        "1.20.1/fabric": [
+          "when-dungeons-arise",
+          "towns-and-towers",
+          "ct-overhaul-village",
+          "dungeons-and-taverns"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "repurposed-structures-forge",
+            "vanilla structures in every biome"
+          ],
+          [
+            "idas",
+            "Integrated Dungeons and Structures"
+          ],
+          [
+            "dungeoncrawl",
+            "roguelike dungeons"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "seasons",
+      "title": "Serene Seasons",
+      "tags": [
+        "survival",
+        "farming",
+        "worldgen"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "four seasons: crops grow in season, snow comes and goes, trees change",
+      "when": "farming packs; makes a year feel like a year",
+      "mods": {
+        "1.20.1/forge": [
+          "serene-seasons"
+        ],
+        "1.20.1/fabric": [
+          "serene-seasons"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "survival",
+      "title": "Survival",
+      "tags": [
+        "survival"
+      ],
+      "group": "survival-core",
+      "priority": 4,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "Tough As Nails: thirst and temperature; Cold Sweat: temperature done carefully",
+      "when": "hard survival packs only",
+      "mods": {
+        "1.20.1/forge": [
+          "tough-as-nails"
+        ],
+        "1.20.1/fabric": [
+          "tough-as-nails"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "cold-sweat",
+            "temperature instead of Tough As Nails' version; pick one"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "fishing",
+      "title": "Aquaculture",
+      "tags": [
+        "farming",
+        "food"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "light",
+      "summary": "real fish per biome, rods with upgrades, fillet knife",
+      "when": "any pack with water",
+      "mods": {
+        "1.20.1/forge": [
+          "aquaculture"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "lets-do",
+      "title": "Let's Do",
+      "tags": [
+        "food",
+        "farming"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "Bakery, Brewery, Vinery, Candlelight, Meadow: pretty cooking lines that share one style",
+      "when": "a cozy pack; each module adds a kitchen theme",
+      "mods": {
+        "1.20.1/forge": [
+          "lets-do-bakery",
+          "lets-do-brewery",
+          "lets-do-vinery",
+          "lets-do-candlelight",
+          "lets-do-meadow"
+        ],
+        "1.20.1/fabric": [
+          "lets-do-bakery",
+          "lets-do-brewery",
+          "lets-do-vinery",
+          "lets-do-candlelight",
+          "lets-do-meadow"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "pams",
+      "title": "Pam's HarvestCraft 2",
+      "tags": [
+        "food",
+        "farming"
+      ],
+      "group": "food-core",
+      "priority": 4,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "hundreds of foods and crops; the classic",
+      "when": "only if Farmer's Delight is not enough; 1.20.1 has the food core only",
+      "mods": {
+        "1.20.1/forge": [
+          "pams-harvestcraft-2-food-core"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "combat",
+      "title": "Better Combat",
+      "tags": [
+        "combat"
+      ],
+      "group": "combat-core",
+      "priority": 7,
+      "grind": "low",
+      "weight": "light",
+      "summary": "weapon animations, combos, attack ranges that make sense; no new mechanics to learn",
+      "when": "any pack with fighting",
+      "mods": {
+        "1.20.1/forge": [
+          "better-combat"
+        ],
+        "1.20.1/fabric": [
+          "better-combat"
+        ]
+      }
+    },
+    {
+      "id": "epic-fight",
+      "title": "Epic Fight",
+      "tags": [
+        "combat"
+      ],
+      "group": "combat-core",
+      "priority": 5,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "a full third-person combat system with stances, dodges and skills",
+      "when": "when combat should be the game; conflicts with many weapon mods",
+      "mods": {
+        "1.20.1/forge": [
+          "epic-fight"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "weapons",
+      "title": "Simply Swords",
+      "tags": [
+        "combat",
+        "rpg"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "forty weapons with unique abilities, netherite tier included",
+      "when": "with Better Combat",
+      "mods": {
+        "1.20.1/forge": [
+          "simply-swords"
+        ],
+        "1.20.1/fabric": [
+          "simply-swords"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "aircraft",
+      "title": "Immersive Aircraft",
+      "tags": [
+        "adventure"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "light",
+      "summary": "biplanes, airships, gyrodynes built from wood and iron",
+      "when": "a fun way to cross a big world",
+      "mods": {
+        "1.20.1/forge": [
+          "immersive-aircraft"
+        ],
+        "1.20.1/fabric": [
+          "immersive-aircraft"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "supplementaries",
+      "title": "Supplementaries",
+      "tags": [
+        "decor",
+        "qol"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "light",
+      "summary": "a hundred small things that fit vanilla: signs, jars, ropes, pulleys, bellows",
+      "when": "any pack; nothing in it breaks balance",
+      "mods": {
+        "1.20.1/forge": [
+          "supplementaries"
+        ],
+        "1.20.1/fabric": [
+          "supplementaries"
+        ]
+      }
+    },
+    {
+      "id": "quark",
+      "title": "Quark",
+      "tags": [
+        "decor",
+        "qol"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "vanilla+ in one mod: building blocks, chests you sort, variant trees; every module can be switched off",
+      "when": "when the pack should feel like vanilla with more",
+      "mods": {
+        "1.20.1/forge": [
+          "quark"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "macaws",
+      "title": "Macaw's",
+      "tags": [
+        "decor"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "doors, windows, furniture, bridges, roofs, fences, lights, paintings, trapdoors, paths, stairs; one style, every wood",
+      "when": "builders' packs",
+      "mods": {
+        "1.20.1/forge": [
+          "macaws-doors",
+          "macaws-windows",
+          "macaws-furniture",
+          "macaws-bridges",
+          "macaws-roofs",
+          "macaws-fences-and-walls",
+          "macaws-lights-and-lamps",
+          "macaws-paintings",
+          "macaws-trapdoors",
+          "macaws-paths-and-pavings",
+          "macaws-stairs"
+        ],
+        "1.20.1/fabric": [
+          "macaws-doors",
+          "macaws-windows",
+          "macaws-furniture",
+          "macaws-bridges",
+          "macaws-roofs",
+          "macaws-fences-and-walls",
+          "macaws-lights-and-lamps",
+          "macaws-paintings",
+          "macaws-trapdoors",
+          "macaws-paths-and-pavings",
+          "macaws-stairs"
+        ]
+      }
+    },
+    {
+      "id": "chisel",
+      "title": "Chipped",
+      "tags": [
+        "decor"
+      ],
+      "group": "chisel-core",
+      "priority": 6,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "hundreds of block variants from a chisel-like workbench",
+      "when": "builders' packs",
+      "mods": {
+        "1.20.1/forge": [
+          "chipped"
+        ],
+        "1.20.1/fabric": [
+          "chipped"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "rechiseled",
+      "title": "Rechiseled",
+      "tags": [
+        "decor"
+      ],
+      "group": "chisel-core",
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "block variants with connected textures, lighter than Chipped",
+      "when": "when Chipped is too many",
+      "mods": {
+        "1.20.1/forge": [
+          "rechiseled"
+        ],
+        "1.20.1/fabric": [
+          "rechiseled"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "furniture",
+      "title": "Furniture",
+      "tags": [
+        "decor"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Handcrafted and Another Furniture: tables, chairs, shelves; Decorative Blocks: beams, chandeliers, braziers",
+      "when": "builders' packs",
+      "mods": {
+        "1.20.1/forge": [
+          "handcrafted",
+          "another-furniture",
+          "decorative-blocks"
+        ],
+        "1.20.1/fabric": [
+          "handcrafted",
+          "another-furniture",
+          "decorative-blocks"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "framed",
+      "title": "FramedBlocks",
+      "tags": [
+        "decor"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "light",
+      "summary": "any block in any shape: slopes, stairs, doors that look like whatever you put in",
+      "when": "builders who want shapes vanilla lacks",
+      "mods": {
+        "1.20.1/forge": [
+          "framedblocks"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "map",
+      "title": "Map",
+      "tags": [
+        "coop",
+        "qol"
+      ],
+      "group": "map-core",
+      "priority": 8,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Xaero's Minimap and World Map: a minimap and a full map with waypoints, fast and light",
+      "when": "when the pack has no FTB Chunks map",
+      "mods": {
+        "1.20.1/forge": [
+          "xaeros-minimap",
+          "xaeros-world-map"
+        ],
+        "1.20.1/fabric": [
+          "xaeros-minimap",
+          "xaeros-world-map"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "journeymap",
+      "title": "JourneyMap",
+      "tags": [
+        "coop",
+        "qol"
+      ],
+      "group": "map-core",
+      "priority": 7,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "the classic full-screen map with waypoints and a web view",
+      "when": "when the player asks for JourneyMap by name",
+      "mods": {
+        "1.20.1/forge": [
+          "journeymap"
+        ],
+        "1.20.1/fabric": [
+          "journeymap"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "backpack",
+      "title": "Traveler's Backpack",
+      "tags": [
+        "qol"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "light",
+      "summary": "a worn backpack with tanks and a sleeping bag; the alternative to Sophisticated Backpacks",
+      "when": "pick one backpack mod",
+      "mods": {
+        "1.20.1/forge": [
+          "travelersbackpack"
+        ],
+        "1.20.1/fabric": [
+          "travelersbackpack"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "balance",
+      "title": "Balance",
+      "tags": [
+        "balance"
+      ],
+      "priority": 10,
+      "default": true,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Almost Unified: one ingot, dust and ore per metal across Thermal, Mekanism, IE, Create (the rest is hidden and converts); Polymorph: when two recipes share a grid, a button picks which",
+      "when": "always, as soon as two mods add the same metal",
+      "mods": {
+        "1.20.1/forge": [
+          "almostunified",
+          "polymorph"
+        ],
+        "1.20.1/fabric": [
+          "almostunified",
+          "polymorph"
+        ]
+      },
+      "pairs_with": [
+        "thermal",
+        "mekanism",
+        "ie",
+        "create"
+      ]
+    },
+    {
+      "id": "textures",
+      "title": "Textures",
+      "tags": [
+        "visual"
+      ],
+      "priority": 6,
+      "default": true,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Faithful 32x: vanilla's look at twice the detail, shipped enabled",
+      "when": "always; costs almost nothing",
+      "mods": {
+        "1.20.1/forge": [
+          "faithful-32x"
+        ],
+        "1.20.1/fabric": [
+          "faithful-32x"
+        ]
+      }
+    },
+    {
+      "id": "shaders",
+      "title": "Shaders",
+      "tags": [
+        "visual"
+      ],
+      "group": "shaders-core",
+      "priority": 8,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "Complementary Reimagined, shipped enabled through Oculus or Iris",
+      "when": "mid and high tier machines; low tier gets a low preset or skips it",
+      "mods": {
+        "1.20.1/forge": [
+          "complementary-reimagined"
+        ],
+        "1.20.1/fabric": [
+          "complementary-reimagined"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "complementary-unbound",
+            "the Unbound look of the same pack"
+          ]
+        ],
+        "1.20.1/fabric": [
+          [
+            "complementary-unbound",
+            "the Unbound look of the same pack"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "bsl",
+      "title": "BSL Shaders",
+      "tags": [
+        "visual"
+      ],
+      "group": "shaders-core",
+      "priority": 6,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "BSL: warm, soft, the other classic",
+      "when": "when Complementary is not the taste",
+      "mods": {
+        "1.20.1/forge": [
+          "bsl-shaders"
+        ],
+        "1.20.1/fabric": [
+          "bsl-shaders"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "photon",
+      "title": "Photon Shaders",
+      "tags": [
+        "visual"
+      ],
+      "group": "shaders-core",
+      "priority": 4,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "Photon: realistic light, heavier",
+      "when": "high tier only",
+      "mods": {
+        "1.20.1/forge": [
+          "photon-shader"
+        ],
+        "1.20.1/fabric": [
+          "photon-shader"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "animations",
+      "title": "Fresh Animations",
       "tags": [
         "visual"
       ],
       "priority": 5,
       "grind": "low",
-      "weight": "heavy",
-      "summary": "a 32x texture pack and a shader pack, shipped enabled",
-      "when": "mid and high tier machines; skip on 8 GB or integrated graphics",
+      "weight": "medium",
+      "summary": "every vanilla mob animated properly; Entity Model Features and Entity Texture Features make the pack work",
+      "when": "mid tier and up",
       "mods": {
         "1.20.1/forge": [
-          "faithful-32x",
-          "complementary-reimagined"
+          "entity-model-features",
+          "entitytexturefeatures",
+          "fresh-animations"
         ],
         "1.20.1/fabric": [
-          "faithful-32x",
-          "complementary-reimagined"
+          "entity-model-features",
+          "entitytexturefeatures",
+          "fresh-animations"
         ]
       }
+    },
+    {
+      "id": "audio",
+      "title": "Sound",
+      "tags": [
+        "visual"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Sound Physics Remastered: reverb and occlusion in caves and rooms; AmbientSounds: wind, birds, water",
+      "when": "any pack; one of the cheapest upgrades to how the game feels",
+      "mods": {
+        "1.20.1/forge": [
+          "sound-physics-remastered",
+          "ambientsounds"
+        ],
+        "1.20.1/fabric": [
+          "sound-physics-remastered",
+          "ambientsounds"
+        ]
+      }
+    },
+    {
+      "id": "ambience",
+      "title": "Ambience",
+      "tags": [
+        "visual"
+      ],
+      "priority": 4,
+      "grind": "low",
+      "weight": "light",
+      "summary": "Particle Rain, Not Enough Animations, 3D Skin Layers, Better Third Person, Legendary Tooltips, dynamic lights",
+      "when": "small visual touches with no gameplay change",
+      "mods": {
+        "1.20.1/forge": [
+          "particle-rain",
+          "not-enough-animations",
+          "3dskinlayers",
+          "better-third-person",
+          "legendary-tooltips",
+          "sodium-dynamic-lights"
+        ],
+        "1.20.1/fabric": [
+          "particle-rain",
+          "not-enough-animations",
+          "3dskinlayers",
+          "better-third-person",
+          "legendary-tooltips",
+          "sodium-dynamic-lights"
+        ]
+      },
+      "pick": "extra"
+    },
+    {
+      "id": "horizons",
+      "title": "Distant Horizons",
+      "tags": [
+        "visual",
+        "perf"
+      ],
+      "priority": 3,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "level-of-detail terrain far beyond render distance",
+      "when": "high tier; shader support is partial on 1.20.1",
+      "mods": {
+        "1.20.1/forge": [
+          "distanthorizons"
+        ],
+        "1.20.1/fabric": [
+          "distanthorizons"
+        ]
+      },
+      "pick": "extra"
     },
     {
       "id": "tune",

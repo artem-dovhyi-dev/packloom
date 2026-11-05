@@ -157,10 +157,15 @@ def save(idx: dict, path: Path) -> None:
 
 
 def recipes_matching(idx: dict, where: dict) -> list[str]:
+    """KubeJS-style filter over the registry; see match_recipes."""
+    return match_recipes(idx["recipe"], where)
+
+
+def match_recipes(recipes: dict, where: dict) -> list[str]:
     """KubeJS-style filter: {"id": "ns:path"} | {"mod": "ns"} | {"output": "ns:item"} | {"type": "ns:type"}
-    | {"input": "ns:item"}; several keys AND together. Returns recipe ids."""
+    | {"input": "ns:item"}; several keys AND together. `recipes` maps id -> {type, result, inputs}."""
     hits = []
-    for rid, rec in idx["recipe"].items():
+    for rid, rec in recipes.items():
         ok = True
         for k, v in where.items():
             if k == "id":
@@ -178,3 +183,8 @@ def recipes_matching(idx: dict, where: dict) -> list[str]:
         if ok:
             hits.append(rid)
     return hits
+
+
+def namespaces(idx: dict) -> set[str]:
+    """Mod ids that define at least one item."""
+    return {i.split(":", 1)[0] for i in idx["item"]}
