@@ -562,7 +562,7 @@ def doc(data: dict) -> str:
             lines.append("")
             for it in ig.get("items", []):
                 kind = it.get("type", "basic") + (f", {it['tier']} tier" if it.get("tier") else "")
-                lines.append(f"- **{it.get('name', it['id'])}** `{it['id']}` ({kind})" + (": " + " ".join(it.get("tooltip", [])) if it.get("tooltip") else ""))
+                lines.append(f"- **{it.get('name', it['id'])}** `{it['id']}` ({kind})" + (": " + "; ".join(it.get("tooltip", [])) if it.get("tooltip") else ""))
             for r in ig.get("recipes", []):
                 lines.append(f"- {describe_recipe(r)}")
             for rm in ig.get("remove", []):
