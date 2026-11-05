@@ -1,6 +1,9 @@
 # Demo
 
-A recorded terminal session, about half a minute with idle time compressed, on TechPack 1.2.0 (1.20.1 Forge, 85 files):
+**Explainer video (2:36)**: one illustrated scene per step with narration and subtitles, on the hosted demo page
+https://claude.ai/artifact/UMSf4z353D2BnkRF41htxD (private until shared) and as `packloom-explainer.mp4` in the release assets.
+
+**Terminal recording.** A recorded terminal session, about half a minute with idle time compressed, on TechPack 1.2.0 (1.20.1 Forge, 85 files):
 
 1. `catalog tags` and `design`: a wish list of tags becomes 15 families and 73 mods.txt lines, with reasons.
 2. `hardware`: the machine (M1 Pro, 16 GB) sets the heap and the visual tier.
