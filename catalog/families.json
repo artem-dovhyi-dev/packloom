@@ -1,0 +1,593 @@
+{
+  "$schema": "families: one entry per family of mods that does one job. `mods` and `addons` are keyed by `<minecraft>/<loader>` and hold mods.txt lines (full mods.txt syntax). See docs/catalog.md.",
+  "tags": {
+    "tech": "machines, energy, automation",
+    "storage": "digital or bulk storage, pipes, logistics",
+    "magic": "spells, mana, rituals",
+    "rpg": "new dimensions, bosses, gear progression",
+    "adventure": "structures, dungeons, exploration",
+    "farming": "crops, animals, bees, automated farms",
+    "food": "cooking and meals",
+    "worldgen": "biomes and terrain",
+    "coop": "teams, shared progress, voice, map",
+    "quests": "a quest book that leads the player",
+    "qol": "recipes viewer, tooltips, backpacks, small conveniences",
+    "perf": "runs faster, no gameplay change",
+    "visual": "textures and shaders",
+    "tune": "lets the pack author change recipes and add items"
+  },
+  "families": [
+    {
+      "id": "thermal",
+      "title": "Thermal Series",
+      "tags": [
+        "tech"
+      ],
+      "group": "tech-core",
+      "priority": 10,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "ores and alloys, machines and dynamos, ducts, farming machines, Fluxbore and jetpack",
+      "when": "first hour of a tech pack; gentle curve, every machine is one block",
+      "mods": {
+        "1.20.1/forge": [
+          "thermal-foundation",
+          "thermal-expansion",
+          "thermal-dynamics",
+          "thermal-cultivation",
+          "thermal-innovation",
+          "thermal-locomotion",
+          "thermal-integration"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "thermal-extra",
+            "tier 5 augments, new materials"
+          ],
+          [
+            "redstone-arsenal",
+            "flux tools and armor"
+          ],
+          [
+            "ensorcellation",
+            "extra enchantments"
+          ]
+        ]
+      },
+      "pairs_with": [
+        "ae2",
+        "mekanism",
+        "quarry"
+      ]
+    },
+    {
+      "id": "create",
+      "title": "Create",
+      "tags": [
+        "tech"
+      ],
+      "group": "tech-core",
+      "priority": 8,
+      "grind": "medium",
+      "weight": "heavy",
+      "summary": "rotational power, contraptions, trains; builds that move",
+      "when": "when the player wants to build machines by hand rather than place blocks; heavier on the client",
+      "mods": {
+        "1.20.1/forge": [
+          "create"
+        ],
+        "1.20.1/fabric": [
+          "create-fabric"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "createaddition",
+            "electricity bridge: generators and motors"
+          ],
+          [
+            "create-steam-n-rails",
+            "more trains and tracks"
+          ]
+        ]
+      },
+      "pairs_with": [
+        "ae2",
+        "logistics"
+      ]
+    },
+    {
+      "id": "mekanism",
+      "title": "Mekanism",
+      "tags": [
+        "tech"
+      ],
+      "priority": 9,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "ore tripling, chemistry, Digital Miner, MekaSuit",
+      "when": "mid game, after a first machine line; the endgame armor of most tech packs",
+      "mods": {
+        "1.20.1/forge": [
+          "mekanism"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "mekanism-generators",
+            "fission, fusion, turbines (official)"
+          ],
+          [
+            "mekanism-additions",
+            "balloons, glow panels (official)"
+          ],
+          [
+            "mekanism-tools",
+            "tool and armor sets (official)"
+          ]
+        ]
+      },
+      "pairs_with": [
+        "ae2",
+        "reactors"
+      ]
+    },
+    {
+      "id": "ae2",
+      "title": "Applied Energistics 2",
+      "tags": [
+        "tech",
+        "storage"
+      ],
+      "priority": 9,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "digital storage, terminals, autocrafting",
+      "when": "once chests overflow, usually chapter 3-4 of a tech pack",
+      "mods": {
+        "1.20.1/forge": [
+          "ae2"
+        ],
+        "1.20.1/fabric": [
+          "ae2"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "extended-ae",
+            "bigger pattern providers, Assembler Matrix"
+          ],
+          [
+            "applied-energistics-2-wireless-terminals",
+            "terminals in a Curios slot"
+          ],
+          [
+            "mega",
+            "huge cells"
+          ],
+          [
+            "applied-mekanistics",
+            "Mekanism gases in ME"
+          ],
+          [
+            "appflux",
+            "Flux energy in ME"
+          ]
+        ]
+      },
+      "pairs_with": [
+        "thermal",
+        "mekanism"
+      ]
+    },
+    {
+      "id": "reactors",
+      "title": "Extreme Reactors",
+      "tags": [
+        "tech"
+      ],
+      "priority": 6,
+      "grind": "low",
+      "weight": "light",
+      "summary": "BigReactors: multiblock reactors and turbines on yellorium",
+      "when": "when energy becomes the bottleneck",
+      "mods": {
+        "1.20.1/forge": [
+          "extreme-reactors"
+        ]
+      },
+      "pairs_with": [
+        "mekanism",
+        "thermal"
+      ]
+    },
+    {
+      "id": "quarry",
+      "title": "QuarryPlus",
+      "tags": [
+        "tech"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "light",
+      "summary": "the BuildCraft quarry: markers, Quarry Plus, Chunk Destroyer; removes the mining grind",
+      "when": "as soon as a dynamo makes 40 RF/t",
+      "mods": {
+        "1.20.1/forge": [
+          "additional-enchanted-miner"
+        ]
+      },
+      "pairs_with": [
+        "thermal"
+      ]
+    },
+    {
+      "id": "rftools",
+      "title": "RFTools",
+      "tags": [
+        "tech"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "light",
+      "summary": "the Builder with shape cards: digs, moves, copies structures",
+      "when": "late game, a quarry alternative",
+      "mods": {
+        "1.20.1/forge": [
+          "rftools-base",
+          "rftools-builder"
+        ]
+      }
+    },
+    {
+      "id": "logistics",
+      "title": "Logistics",
+      "tags": [
+        "tech",
+        "storage"
+      ],
+      "priority": 8,
+      "default": true,
+      "grind": "low",
+      "weight": "light",
+      "summary": "one pipe for everything, drawers, bigger chests, wireless energy",
+      "when": "from the first chest",
+      "mods": {
+        "1.20.1/forge": [
+          "pipez",
+          "storagedrawers",
+          "iron-chests",
+          "manual:flux-networks   # CurseForge only: Prism -> Mods -> Download mods -> CurseForge"
+        ],
+        "1.20.1/fabric": [
+          "storagedrawers"
+        ]
+      }
+    },
+    {
+      "id": "divinerpg",
+      "title": "DivineRPG",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 9,
+      "grind": "high",
+      "weight": "medium",
+      "summary": "eight dimensions, bosses, gear tiers; a whole second line of progression",
+      "when": "a parallel line next to tech; boss drops are grindy by default, tune the drop rates",
+      "mods": {
+        "1.20.1/forge": [
+          "divinerpg"
+        ]
+      },
+      "tune_hint": "4 boss fragments = 1 soul instead of 8 (pack config)"
+    },
+    {
+      "id": "twilight",
+      "title": "The Twilight Forest",
+      "tags": [
+        "rpg",
+        "adventure"
+      ],
+      "priority": 8,
+      "grind": "medium",
+      "weight": "medium",
+      "summary": "one dimension with a chain of bosses and dungeons",
+      "when": "a lighter RPG line than DivineRPG; good for a mixed pack",
+      "mods": {
+        "1.20.1/forge": [
+          "manual:the-twilight-forest   # CurseForge only: Prism -> Mods -> Download mods -> CurseForge"
+        ]
+      }
+    },
+    {
+      "id": "botania",
+      "title": "Botania",
+      "tags": [
+        "magic"
+      ],
+      "priority": 8,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "mana from flowers, no energy numbers; magic built from vanilla-looking blocks",
+      "when": "a magic line that does not need a tech line",
+      "mods": {
+        "1.20.1/forge": [
+          "botania"
+        ],
+        "1.20.1/fabric": [
+          "botania"
+        ]
+      }
+    },
+    {
+      "id": "ars",
+      "title": "Ars Nouveau",
+      "tags": [
+        "magic"
+      ],
+      "priority": 8,
+      "grind": "low",
+      "weight": "medium",
+      "summary": "spells you compose from glyphs, familiars, rituals",
+      "when": "the friendliest spell mod; works in coop",
+      "mods": {
+        "1.20.1/forge": [
+          "ars-nouveau"
+        ]
+      }
+    },
+    {
+      "id": "bees",
+      "title": "Forestry and bees",
+      "tags": [
+        "farming"
+      ],
+      "priority": 7,
+      "grind": "medium",
+      "weight": "light",
+      "summary": "multiblock farms, classic bee breeding, resource bees that feed the tech line",
+      "when": "chapter 5 of a tech pack; bees that make Thermal, Mekanism and AE2 materials",
+      "mods": {
+        "1.20.1/forge": [
+          "forestry-community-edition"
+        ]
+      },
+      "addons": {
+        "1.20.1/forge": [
+          [
+            "productivebees",
+            "resource bees"
+          ],
+          [
+            "gendustry-community-edition",
+            "Industrial Apiary, mutations without breeding"
+          ],
+          [
+            "mystian-apiary",
+            "27-bee multiblock with ME interface"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "food",
+      "title": "Farmer's Delight",
+      "tags": [
+        "food",
+        "farming"
+      ],
+      "priority": 8,
+      "grind": "low",
+      "weight": "light",
+      "summary": "cutting board, cooking pot, skillet, stove, four crops, meals with Nourishment",
+      "when": "whenever you are hungry; one food mod is enough, more only adds near-identical dishes",
+      "mods": {
+        "1.20.1/forge": [
+          "farmers-delight"
+        ],
+        "1.20.1/fabric": [
+          "farmers-delight-fabric"
+        ]
+      }
+    },
+    {
+      "id": "worldgen",
+      "title": "World generation",
+      "tags": [
+        "worldgen",
+        "adventure"
+      ],
+      "priority": 7,
+      "grind": "low",
+      "weight": "light",
+      "summary": "more biomes, deeper terrain, better vanilla structures; data only, no render cost",
+      "when": "new chunks only, so decide before the world is made",
+      "mods": {
+        "1.20.1/forge": [
+          "terralith",
+          "biomes-o-plenty   # coexists with Terralith through TerraBlender",
+          "tectonic",
+          "lithostitched   # Tectonic library, Modrinth does not mark it required",
+          "yungs-better-mineshafts",
+          "yungs-better-dungeons",
+          "yungs-better-strongholds",
+          "yungs-better-nether-fortresses",
+          "natures-compass"
+        ],
+        "1.20.1/fabric": [
+          "terralith",
+          "biomes-o-plenty",
+          "tectonic",
+          "lithostitched",
+          "yungs-better-mineshafts",
+          "yungs-better-dungeons",
+          "yungs-better-strongholds",
+          "natures-compass"
+        ]
+      }
+    },
+    {
+      "id": "coop",
+      "title": "FTB coop and quests",
+      "tags": [
+        "coop",
+        "quests"
+      ],
+      "priority": 9,
+      "grind": "low",
+      "weight": "light",
+      "summary": "quest book, shared team progress, claimed chunks that keep running, voice chat, free waystones, no item loss on death",
+      "when": "any pack for 2-6 friends",
+      "mods": {
+        "1.20.1/forge": [
+          "architectury-api",
+          "ftb:ftb-library-forge",
+          "ftb:ftb-teams-forge",
+          "ftb:ftb-quests-forge",
+          "ftb:ftb-chunks-forge",
+          "paxi   # global datapacks from config/paxi/datapacks",
+          "simple-voice-chat",
+          "waystones",
+          "corpse",
+          "comforts"
+        ],
+        "1.20.1/fabric": [
+          "architectury-api",
+          "ftb:ftb-library-fabric",
+          "ftb:ftb-teams-fabric",
+          "ftb:ftb-quests-fabric",
+          "ftb:ftb-chunks-fabric",
+          "simple-voice-chat",
+          "waystones",
+          "comforts"
+        ]
+      }
+    },
+    {
+      "id": "qol",
+      "title": "Quality of life",
+      "tags": [
+        "qol"
+      ],
+      "priority": 10,
+      "default": true,
+      "grind": "low",
+      "weight": "light",
+      "summary": "recipe viewer, ore and drop tables, block info on screen, in-game manuals, backpacks, food tooltips, drag over slots, a trash block",
+      "when": "always",
+      "mods": {
+        "1.20.1/forge": [
+          "jei",
+          "just-enough-resources-jer",
+          "jade",
+          "patchouli",
+          "sophisticated-backpacks",
+          "appleskin",
+          "mouse-tweaks",
+          "trash-cans"
+        ],
+        "1.20.1/fabric": [
+          "jei",
+          "jade",
+          "patchouli",
+          "appleskin",
+          "mouse-tweaks"
+        ]
+      }
+    },
+    {
+      "id": "perf",
+      "title": "Performance",
+      "tags": [
+        "perf"
+      ],
+      "priority": 10,
+      "default": true,
+      "grind": "low",
+      "weight": "light",
+      "summary": "render and memory fixes with no gameplay change; Embeddium + Oculus instead of OptiFine (OptiFine breaks Forge mods and is not on Modrinth)",
+      "when": "always; required on Apple Silicon and on 8 GB machines",
+      "mods": {
+        "1.20.1/forge": [
+          "embeddium",
+          "oculus",
+          "entityculling",
+          "immediatelyfast",
+          "dynamic-fps",
+          "ferrite-core",
+          "modernfix",
+          "canary",
+          "clumps",
+          "spark",
+          "chunky"
+        ],
+        "1.20.1/fabric": [
+          "sodium",
+          "lithium",
+          "iris",
+          "entityculling",
+          "immediatelyfast",
+          "dynamic-fps",
+          "ferrite-core",
+          "modernfix",
+          "clumps",
+          "spark",
+          "chunky"
+        ]
+      }
+    },
+    {
+      "id": "visual",
+      "title": "Textures and shaders",
+      "tags": [
+        "visual"
+      ],
+      "priority": 5,
+      "grind": "low",
+      "weight": "heavy",
+      "summary": "a 32x texture pack and a shader pack, shipped enabled",
+      "when": "mid and high tier machines; skip on 8 GB or integrated graphics",
+      "mods": {
+        "1.20.1/forge": [
+          "faithful-32x",
+          "complementary-reimagined"
+        ],
+        "1.20.1/fabric": [
+          "faithful-32x",
+          "complementary-reimagined"
+        ]
+      }
+    },
+    {
+      "id": "tune",
+      "title": "KubeJS tuning layer",
+      "tags": [
+        "tune"
+      ],
+      "priority": 10,
+      "grind": "low",
+      "weight": "light",
+      "summary": "scripts that change recipes and add items; packloom writes them from tune.json",
+      "when": "when the pack changes any recipe, difficulty preset or adds a cross-mod item",
+      "mods": {
+        "1.20.1/forge": [
+          "kubejs",
+          "rhino",
+          "architectury-api"
+        ],
+        "1.20.1/fabric": [
+          "kubejs",
+          "rhino",
+          "architectury-api"
+        ]
+      }
+    }
+  ]
+}

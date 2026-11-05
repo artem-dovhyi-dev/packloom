@@ -29,7 +29,7 @@ class ModEntry:
 def parse_mods(text: str) -> list[ModEntry]:
     """One entry per line. `#` starts a comment. Blank lines and headings are skipped.
 
-    Grammar (see .scratch/packloom/issues/06-pack-manifest-syntax.md):
+    Grammar (see SYNTAX.md):
       slug | slug@1.2.3 | slug client | ftb:artifact | url:https://x/y.jar sha256=... | manual:name
     """
     entries: list[ModEntry] = []

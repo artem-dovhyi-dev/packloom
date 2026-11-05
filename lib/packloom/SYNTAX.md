@@ -22,3 +22,20 @@ One entry per line. `#` starts a comment; blank lines and `# --- headings ---` a
 | `manual:flux-networks  # CurseForge` | not downloaded; listed in the build report as a manual step |
 
 Required dependencies are resolved from Modrinth automatically, so libraries need no line of their own.
+
+`hardware` (written by `packloom hardware --apply`): `{ "ram_gb": 16, "gpu": "apple", "tier": "mid" }`.
+`memory_mb` then follows the machine: ~40 % of RAM between 3 and 10 GB.
+
+# tune.json
+
+Recipes, pack-only items and difficulty presets as data; `packloom tune build` checks every id against
+`registry.json` and writes the KubeJS scripts into `overrides/kubejs/`. Full reference: `docs/tune.md`.
+
+```json
+{ "namespace": "mypack", "difficulty": "normal",
+  "items": [{ "id": "mypack:blade", "name": "Blade", "type": "sword", "tier": "netherite", "attack_damage_bonus": 4 }],
+  "recipes": [{ "type": "shaped", "pattern": ["A", "B"], "key": {"A": "mod:sword", "B": "mod:core"}, "result": "mypack:blade" }],
+  "remove": [{ "output": "mod:item" }],
+  "replace_inputs": [{ "in": {"output": "mod:machine"}, "from": "#forge:ingots/iron", "to": "#forge:ingots/gold" }],
+  "presets": { "easy": { "replace_inputs": [] }, "hard": { "replace_inputs": [] } } }
+```

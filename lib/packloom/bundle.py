@@ -93,6 +93,7 @@ def server_bundle(pack: Pack, out_dir: Path, loader_version: str, installer_url:
     _copytree(pack.server_dir / "mods", folder / "mods")
     _copytree(pack.overrides / "config", folder / "config")
     _copytree(pack.overrides / "defaultconfigs", folder / "defaultconfigs")
+    _copytree(pack.overrides / "kubejs", folder / "kubejs")
     (folder / "server.properties").write_text(SERVER_PROPERTIES.format(name=pack.name, version=pack.version))
     (folder / "eula.txt").write_text("# By running start.sh you accept https://aka.ms/MinecraftEULA\neula=false\n")
     mem = max(4, pack.memory_mb // 1024 + 2)

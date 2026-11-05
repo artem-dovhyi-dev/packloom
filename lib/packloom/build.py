@@ -130,7 +130,7 @@ def sync_server_mods(pack: Pack, files: list[dict], log=print) -> Path:
     return sdir
 
 
-SERVER_OVERRIDE_DIRS = ("config", "defaultconfigs")
+SERVER_OVERRIDE_DIRS = ("config", "defaultconfigs", "kubejs")
 
 
 def sync_server_overrides(pack: Pack, log=print) -> list[Path]:

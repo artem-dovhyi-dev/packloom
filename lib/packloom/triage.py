@@ -67,6 +67,9 @@ def analyze(lines: list[str], crash_text: Optional[str] = None, mod_ids: Optiona
     for m in re.finditer(r"Duplicate mods? found[^\n]*?Mod ID: '([^']+)'[^\n]*", joined):
         _add(t.suspects, m.group(1), "duplicate", m.group(0), "remove")
 
+    for m in re.finditer(r"^.*(?:packloom\.\w+\.js|KubeJS).*(?:Error|Exception|ERROR).*$", joined, re.M):
+        if "packloom" in m.group(0) or "server_scripts" in m.group(0) or "startup_scripts" in m.group(0):
+            _add(t.suspects, "kubejs-script", "script", m.group(0), "config")   # fix tune.json, then `tune build`
     if crash_text:
         _stacktrace_suspects(crash_text, mod_ids, t.suspects)
     if not t.ok and not t.suspects:

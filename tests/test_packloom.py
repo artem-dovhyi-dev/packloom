@@ -136,3 +136,166 @@ class ServerOverridesTests(unittest.TestCase):
             self.assertEqual(sorted(p.name for p in q.iterdir()), ["new.snbt"])
             self.assertEqual((root / "server/config/a.toml").read_text(), "a=2")
             self.assertEqual((root / "server/config/mekanism/general.toml").read_text(), "keep")
+
+
+from packloom import catalog, hardware, registry, tune  # noqa: E402
+
+
+class CatalogTests(unittest.TestCase):
+    def setUp(self):
+        self.cat = catalog.load()
+
+    def test_every_family_has_valid_fields(self):
+        for f in self.cat["families"]:
+            self.assertTrue(set(f["tags"]) <= set(self.cat["tags"]), f["id"])
+            for k, lines in f.get("mods", {}).items():
+                self.assertRegex(k, r"^\d+\.\d+(\.\d+)?/(forge|neoforge|fabric|quilt)$")
+                parse_mods("\n".join(lines))   # every line is valid mods.txt syntax
+
+    def test_design_picks_defaults_and_wanted(self):
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["tech"], tier="high")
+        ids = [p.family["id"] for p in prop.picks]
+        self.assertIn("thermal", ids); self.assertIn("qol", ids); self.assertIn("perf", ids)
+        self.assertNotIn("create", ids)                     # same job as thermal, lower priority
+        self.assertIn(("create", "same job as thermal (tech-core); pass --include create to swap"), prop.skipped)
+        self.assertNotIn("divinerpg", ids)                  # rpg not wanted
+
+    def test_design_include_swaps_group_and_tier_drops_heavy(self):
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["tech", "visual"], tier="low", include=["create"])
+        ids = [p.family["id"] for p in prop.picks]
+        self.assertIn("create", ids); self.assertNotIn("thermal", ids)
+        self.assertNotIn("visual", ids)                     # heavy on a low tier
+        self.assertIn(("visual", "heavy for a low-tier machine"), prop.skipped)
+
+    def test_design_no_grind_and_avoid(self):
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["rpg", "magic"], avoid=["magic"], no_grind=True)
+        ids = [p.family["id"] for p in prop.picks]
+        self.assertNotIn("divinerpg", ids); self.assertNotIn("botania", ids); self.assertIn("twilight", ids)
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["rpg"], no_grind=True, include=["divinerpg"])
+        self.assertIn("divinerpg", [p.family["id"] for p in prop.picks])
+
+    def test_unknown_tag_fails(self):
+        with self.assertRaises(ValueError):
+            catalog.design(self.cat, "1.20.1", "forge", ["bogus"])
+
+    def test_mods_txt_round_trips(self):
+        prop = catalog.design(self.cat, "1.20.1", "forge", ["tech", "coop"])
+        text = prop.mods_txt("P")
+        refs = [e.ref for e in parse_mods(text)]
+        self.assertIn("thermal-expansion", refs); self.assertIn("ftb-quests-forge", refs)
+
+
+class HardwareTests(unittest.TestCase):
+    def test_tiers_and_heap(self):
+        self.assertEqual(hardware.Hardware(8, "intel").tier, "low")
+        self.assertEqual(hardware.Hardware(16, "apple").tier, "mid")
+        self.assertEqual(hardware.Hardware(32, "nvidia").tier, "high")
+        self.assertEqual(hardware.Hardware(32, "apple").tier, "mid")
+        self.assertEqual([hardware.Hardware(r).memory_mb for r in (8, 16, 32, 64)], [3072, 6144, 10240, 10240])
+
+    def test_notes_mention_optifine_on_apple(self):
+        self.assertTrue(any("OptiFine" in n for n in hardware.Hardware(16, "apple").notes()))
+
+
+def _fake_jar(path: Path, files: dict):
+    import zipfile
+    with zipfile.ZipFile(path, "w") as z:
+        for name, body in files.items():
+            z.writestr(name, body if isinstance(body, str) else json.dumps(body))
+
+
+class RegistryTests(unittest.TestCase):
+    def test_index_items_tags_recipes(self):
+        with tempfile.TemporaryDirectory() as d:
+            jar = Path(d, "m.jar")
+            _fake_jar(jar, {
+                "assets/m/models/item/gear.json": {}, "assets/m/blockstates/box.json": {},
+                "assets/m/lang/en_us.json": {"item.m.gear": "Gear", "entity.m.bug": "Bug"},
+                "data/m/tags/items/gears.json": {"values": ["m:gear"]},
+                "data/m/recipes/gear.json": {"type": "minecraft:crafting_shaped", "pattern": ["#"], "key": {"#": {"tag": "forge:ingots/iron"}}, "result": {"item": "m:gear"}},
+                "data/m/recipes/box.json": {"type": "minecraft:crafting_shapeless", "ingredients": [{"item": "m:gear"}], "result": {"item": "m:box", "count": 2}},
+                "data/m/dimension/void.json": {}})
+            idx = registry.build_index([jar])
+            self.assertEqual(idx["item"]["m:gear"], "Gear"); self.assertIn("m:box", {r["result"] for r in idx["recipe"].values()})
+            self.assertEqual(idx["entity"]["m:bug"], "Bug"); self.assertEqual(idx["tag"], ["#m:gears"]); self.assertEqual(idx["dimension"], ["m:void"])
+            self.assertEqual(idx["recipe"]["m:gear"]["inputs"], ["#forge:ingots/iron"])
+            self.assertEqual(registry.recipes_matching(idx, {"mod": "m", "input": "m:gear"}), ["m:box"])
+            self.assertEqual(registry.recipes_matching(idx, {"output": "m:gear"}), ["m:gear"])
+
+
+class TuneTests(unittest.TestCase):
+    IDX = {"item": {"a:sword": "", "b:core": "", "minecraft:stick": ""}, "block": {}, "entity": {}, "dimension": [],
+           "tag": ["#forge:ingots/iron", "#forge:ingots/gold"], "jars": [],
+           "recipe": {"a:sword": {"type": "minecraft:crafting_shaped", "result": "a:sword", "inputs": ["#forge:ingots/iron", "minecraft:stick"]},
+                      "b:core": {"type": "minecraft:crafting_shaped", "result": "b:core", "inputs": ["#forge:ingots/gold"]}}}
+    DATA = {"namespace": "p", "difficulty": "normal",
+            "items": [{"id": "p:blade", "name": "Blade", "type": "sword", "tier": "netherite", "attack_damage_bonus": 4, "rarity": "epic", "glow": True}],
+            "recipes": [{"id": "p:blade", "type": "shaped", "pattern": ["A", "B"], "key": {"A": "a:sword", "B": "b:core"}, "result": "p:blade"}],
+            "presets": {"hard": {"replace_inputs": [{"in": {"output": "a:sword"}, "from": "#forge:ingots/iron", "to": "#forge:ingots/gold"}],
+                                 "remove": [{"output": "b:core"}]}}}
+
+    def test_check_ok_and_presets(self):
+        rep = tune.check(self.DATA, self.IDX)
+        self.assertTrue(rep.ok, rep.errors); self.assertEqual((rep.items, rep.recipes, rep.replaced, rep.removed), (1, 1, 0, 0))
+        rep = tune.check(dict(self.DATA, difficulty="hard"), self.IDX)
+        self.assertTrue(rep.ok, rep.errors); self.assertEqual((rep.replaced, rep.removed), (1, 1))
+
+    def test_check_catches_unknown_ids_with_hints(self):
+        bad = json.loads(json.dumps(self.DATA)); bad["recipes"][0]["key"]["A"] = "a:swrod"
+        rep = tune.check(bad, self.IDX)
+        self.assertFalse(rep.ok); self.assertIn("did you mean a:sword", rep.errors[0])
+        bad = json.loads(json.dumps(self.DATA)); bad["recipes"][0]["pattern"] = ["AX"]
+        self.assertIn("key has no entry", tune.check(bad, self.IDX).errors[0])
+        bad = json.loads(json.dumps(self.DATA)); bad["presets"]["hard"]["replace_inputs"][0]["from"] = "#forge:ingots/gold"; bad["difficulty"] = "hard"
+        self.assertTrue(any("no recipe matching" in e for e in tune.check(bad, self.IDX).errors))
+        bad = json.loads(json.dumps(self.DATA)); bad["items"][0]["id"] = "a:sword"
+        self.assertTrue(any("already exists" in e for e in tune.check(bad, self.IDX).errors))
+
+    def test_scripts(self):
+        eff = tune.effective(dict(self.DATA, difficulty="hard"))
+        js = tune.startup_script(eff["items"])
+        self.assertIn('event.create("p:blade", "sword").tier("netherite").attackDamageBonus(4.0).displayName("Blade").rarity("epic").glow(true)', js)
+        js = tune.server_script(eff)
+        self.assertIn('event.shaped(Item.of("p:blade", 1), ["A", "B"], {"A": "a:sword", "B": "b:core"}).id("p:blade")', js)
+        self.assertIn('event.replaceInput({output: "a:sword"}, "#forge:ingots/iron", "#forge:ingots/gold")', js)
+        self.assertIn('event.remove({output: "b:core"})', js)
+
+    def test_build_writes_scripts_and_icon(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "pack.json").write_text(json.dumps({"name": "P", "version": "1", "minecraft": "1.20.1", "loader": "forge"}))
+            pack = load_pack(Path(d))
+            rep = tune.build(pack, self.IDX, self.DATA)
+            self.assertTrue(rep.ok)
+            self.assertTrue((pack.overrides / "kubejs" / "server_scripts" / "packloom.tune.js").exists())
+            png = pack.overrides / "kubejs" / "assets" / "p" / "textures" / "item" / "blade.png"
+            self.assertEqual(png.read_bytes()[:8], b"\x89PNG\r\n\x1a\n")
+            stamp = png.stat().st_mtime_ns
+            tune.build(pack, self.IDX, self.DATA)
+            self.assertEqual(png.stat().st_mtime_ns, stamp)   # an existing texture is never overwritten
+
+
+class TriageKubeTests(unittest.TestCase):
+    def test_script_error_is_a_suspect(self):
+        lines = ["[12:00:00] [main/INFO] [KubeJS]: Loaded script packloom.tune.js",
+                 "[12:00:01] [main/ERROR] [KubeJS]: Error in 'server_scripts/packloom.tune.js': TypeError: Cannot read x",
+                 "[12:00:09] [main/INFO]: Done (3.0s)! For help, type \"help\""]
+        t = triage.analyze(lines)
+        self.assertTrue(t.ok)
+        self.assertEqual([(s.mod, s.kind) for s in t.suspects], [("kubejs-script", "script")])
+
+
+class TuneVerifyTests(unittest.TestCase):
+    def test_non_editable_type_warns_and_counts_compare(self):
+        idx = json.loads(json.dumps(TuneTests.IDX))
+        idx["recipe"]["q:quarry"] = {"type": "q:workbench_recipe", "result": "q:quarry", "inputs": ["#forge:ingots/iron"]}
+        data = {"namespace": "p", "difficulty": "normal",
+                "replace_inputs": [{"in": {"output": "q:quarry"}, "from": "#forge:ingots/iron", "to": "#forge:ingots/gold"}]}
+        rep = tune.check(data, idx)
+        self.assertTrue(rep.ok); self.assertEqual(rep.replaced, 1); self.assertIn("may not be able to edit", rep.warnings[0])
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, "pack.json").write_text(json.dumps({"name": "P", "version": "1", "minecraft": "1.20.1", "loader": "forge"}))
+            Path(d, "smoke-test.log").write_text("[1] [main/INFO] [KubeJS Server/]: Loaded script server_scripts:packloom.tune.js\n"
+                                                 "[2] [main/INFO] [KubeJS Server/]: Added 0 recipes, removed 0 recipes, modified 0 recipes, with 0 failed recipes in 1 ms\n")
+            v = tune.verify_logs(load_pack(Path(d)), rep)
+            self.assertEqual(v["counts"]["modified"], 0)
+            self.assertEqual(v["mismatch"], ["modified: tune.json expects 1, the server modified 0 (a rule on a recipe type KubeJS cannot edit?)"])

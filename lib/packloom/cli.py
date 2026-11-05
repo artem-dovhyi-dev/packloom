@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import build as build_mod, bundle, keybinds, loaders, modrinth, prism, server, triage
+from . import build as build_mod, bundle, catalog, hardware, keybinds, loaders, modrinth, prism, registry, server, triage, tune
 from .java import find_java
 from .manifest import Pack, find_pack_dir, load_pack, write_pack
 
@@ -202,6 +202,190 @@ def cmd_bundle(args):
         print(f"server bundle: {folder} (+ .zip)")
 
 
+def _split(csv) -> list[str]:
+    return [x.strip() for x in (csv or "").split(",") if x.strip()]
+
+
+def cmd_catalog(args):
+    cat = catalog.load(Path(args.catalog) if args.catalog else None)
+    if args.what == "tags":
+        for t, d in cat["tags"].items():
+            print(f"{t:10} {d}")
+        return
+    if args.what == "verify":
+        pack = _pack(args)
+        lines = catalog.all_lines(cat, pack.minecraft, pack.loader) if not args.family else \
+            [l for f in catalog.find_family(cat, args.family) for l in catalog.family_lines(f, pack.minecraft, pack.loader)]
+        print(f"verifying {len(lines)} catalog entries on Modrinth for {pack.minecraft} {pack.loader}")
+        problems = catalog.verify(lines, pack.minecraft, pack.loader)
+        print(f"{len(problems)} problem(s)")
+        for ref, why in problems:
+            print(f"  {ref}: {why}")
+        sys.exit(1 if problems else 0)
+    fams = catalog.find_family(cat, args.family) if args.family else cat["families"]
+    if args.json:
+        print(json.dumps(fams, indent=2, ensure_ascii=False)); return
+    for f in fams:
+        targets = ", ".join(sorted(f.get("mods", {})))
+        print(f"{f['id']:10} {f['title']:28} tags={','.join(f['tags'])} grind={f.get('grind','low')} weight={f.get('weight','light')}  [{targets}]")
+        if args.family:
+            print(f"           {f['summary']}\n           when: {f.get('when','')}")
+            for k, lines in f.get("mods", {}).items():
+                print(f"           {k}: " + ", ".join(l.split()[0] for l in lines))
+            for k, adds in f.get("addons", {}).items():
+                print(f"           addons {k}: " + ", ".join(f"{a} ({w})" for a, w in adds))
+
+
+def cmd_design(args):
+    cat = catalog.load(Path(args.catalog) if args.catalog else None)
+    pack = None
+    if args.minecraft and args.loader:
+        mc, loader = args.minecraft, args.loader
+    else:
+        pack = _pack(args)
+        mc, loader = pack.minecraft, pack.loader
+    tier = args.tier or (hardware.from_args(args.ram, args.gpu).tier if (args.ram or args.gpu or args.detect) else "high")
+    prop = catalog.design(cat, mc, loader, _split(args.want), _split(args.avoid), tier=tier, include=_split(args.include),
+                          exclude=_split(args.exclude), addons=not args.no_addons, no_grind=args.no_grind)
+    if args.json and not args.verify:
+        print(json.dumps(prop.as_dict(), indent=2, ensure_ascii=False))
+    else:
+        print(f"Proposal for Minecraft {mc} {loader} (tier {tier}): {len(prop.picks)} families, "
+              f"{sum(len(p.lines) for p in prop.picks)} mods.txt lines\n")
+        for p in prop.picks:
+            print(f"+ {p.family['title']} [{p.family['id']}]: {'; '.join(p.reasons)}")
+            print(f"    {p.family['summary']}")
+            for w in p.warnings:
+                print(f"    ! {w}")
+        if prop.skipped:
+            print("\nskipped:")
+            for fid, why in prop.skipped:
+                print(f"  - {fid}: {why}")
+    lines = [l for p in prop.picks for l in p.lines]
+    if args.verify:
+        print(f"\nverifying {len(lines)} entries on Modrinth")
+        problems = catalog.verify(lines, mc, loader)
+        if problems:
+            print(f"{len(problems)} entry/entries have no {mc} {loader} version: " + ", ".join(r for r, _ in problems))
+            if args.write:
+                sys.exit("not writing mods.txt while entries are unverified")
+    if args.write:
+        pack = pack or _pack(args)
+        if pack.mods_file.exists() and not args.force:
+            sys.exit(f"{pack.mods_file} exists; pass --force to overwrite")
+        pack.mods_file.write_text(prop.mods_txt(pack.name), encoding="utf-8")
+        print(f"\nwrote {pack.mods_file} ({len(lines)} entries)")
+
+
+def cmd_hardware(args):
+    hw = hardware.from_args(args.ram, args.gpu)
+    d = hw.as_dict()
+    if args.json:
+        print(json.dumps(d, indent=2))
+    else:
+        print(f"{hw.ram_gb} GB RAM, gpu={hw.gpu}, cpu={hw.cpu or '?'} ({hw.os}) -> tier {hw.tier}")
+        print(f"  client heap: {hw.memory_mb} MB   shaders: {hw.shaders}   mod ceiling: ~{hw.mod_ceiling}")
+        for n in hw.notes():
+            print(f"  note: {n}")
+    if args.apply:
+        pack = _pack(args)
+        pack.memory_mb = hw.memory_mb
+        pack.extra["hardware"] = {"ram_gb": hw.ram_gb, "gpu": hw.gpu, "tier": hw.tier}
+        write_pack(pack)
+        cat = catalog.load()
+        perf = next(f for f in cat["families"] if f["id"] == "perf")
+        have = {e.ref for e in pack.entries()}
+        add = [l for l in catalog.family_lines(perf, pack.minecraft, pack.loader) if l.split()[0] not in have]
+        if add:
+            with pack.mods_file.open("a", encoding="utf-8") as f:
+                f.write("\n# --- Performance: added by `packloom hardware --apply` ---\n" + "\n".join(add) + "\n")
+        print(f"  pack.json: memory_mb={hw.memory_mb}, hardware={pack.extra['hardware']}; mods.txt: +{len(add)} perf entries")
+
+
+def _registry_jars(pack: Pack, mods_dir: Path | None):
+    mods = mods_dir or (pack.server_dir / "mods")
+    if not mods.is_dir() or not any(mods.glob("*.jar")):
+        sys.exit(f"no jars in {mods}; run `build --server` or `test` first, or pass --mods <dir>")
+    jars = sorted(mods.glob("*.jar"))
+    base = registry.base_jars(pack.server_dir, prism.data_dir() / "libraries" if prism.data_dir().exists() else None)
+    return base + jars, (base[0] if base else None)
+
+
+def cmd_registry(args):
+    pack = _pack(args)
+    jars, van = _registry_jars(pack, Path(args.mods) if args.mods else None)
+    idx = registry.build_index(jars)
+    out = Path(args.out) if args.out else pack.dir / "registry.json"
+    registry.save(idx, out)
+    c = registry.counts(idx)
+    if args.json:
+        print(json.dumps(c | {"path": str(out), "vanilla": str(van) if van else None}))
+    else:
+        print(f"{out.name}: " + ", ".join(f"{k} {v}" for k, v in c.items()) + (f"; vanilla from {van.name}" if van else "; no vanilla jar found, minecraft: ids unknown"))
+
+
+def _registry(pack: Pack) -> dict:
+    path = pack.dir / "registry.json"
+    if not path.exists():
+        jars, _ = _registry_jars(pack, None)
+        idx = registry.build_index(jars)
+        registry.save(idx, path)
+    return registry.load(path)
+
+
+def cmd_tune(args):
+    pack = _pack(args)
+    if args.what == "init":
+        cat = catalog.load()
+        fam = next(f for f in cat["families"] if f["id"] == "tune")
+        have = {e.ref for e in pack.entries()}
+        add = [l for l in catalog.family_lines(fam, pack.minecraft, pack.loader) if l.split()[0] not in have]
+        if add:
+            with pack.mods_file.open("a", encoding="utf-8") as f:
+                f.write("\n# --- KubeJS tuning layer: added by `packloom tune init` ---\n" + "\n".join(add) + "\n")
+        path = tune.init(pack, args.namespace or pack.name.lower().replace(" ", "_"))
+        print(f"{path} ready; mods.txt: +{len(add)} ({', '.join(l.split()[0] for l in add) or 'nothing'}). Next: edit tune.json, then `tune build`.")
+        return
+    if args.what == "verify":
+        expected = tune.check(tune.load(pack.dir / "tune.json"), _registry(pack)) if (pack.dir / "tune.json").exists() else None
+        v = tune.verify_logs(pack, expected)
+        if args.json:
+            print(json.dumps(v, indent=2))
+        else:
+            c = v.get("counts")
+            print(f"kubejs seen: {v['kubejs_seen']}; "
+                  + (f"server: added {c['added']}, removed {c['removed']}, modified {c['modified']}, failed {c['failed']}" if c else "no recipe summary line in the logs")
+                  + (f"; tune.json expects added {expected.recipes}, removed {expected.removed}, modified {expected.replaced}" if expected else "")
+                  + f"; {len(v['errors'])} script error(s)")
+        for e in v["errors"]:
+            print("  ERROR " + e)
+        for m in v["mismatch"]:
+            print("  MISMATCH " + m)
+        sys.exit(1 if v["errors"] or v["mismatch"] or not v["kubejs_seen"] else 0)
+    if args.difficulty:
+        path = pack.dir / "tune.json"
+        data = tune.load(path)
+        data["difficulty"] = args.difficulty
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    idx = _registry(pack)
+    rep = tune.build(pack, idx, write=(args.what == "build"))
+    if args.json:
+        print(json.dumps(rep.as_dict(), indent=2, ensure_ascii=False))
+    else:
+        data = tune.load(pack.dir / "tune.json")
+        print(f"tune.json (difficulty {data.get('difficulty', 'normal')}): {rep.items} item(s), {rep.recipes} recipe(s), "
+              f"removes {rep.removed}, replaces inputs in {rep.replaced} recipe(s): {'OK' if rep.ok else 'ERRORS'}")
+        for n in rep.notes:
+            print("  " + n)
+        for w in rep.warnings:
+            print("  WARNING " + w)
+        for e in rep.errors:
+            print("  ERROR " + e)
+        for w in rep.written:
+            print("  wrote " + w)
+    sys.exit(0 if rep.ok else 1)
+
+
 def cmd_help_syntax(args):
     print(Path(__file__).with_name("SYNTAX.md").read_text())
 
@@ -240,6 +424,32 @@ def main(argv=None):
     s = sub.add_parser("prism", help="locate the Prism instance for this pack"); s.set_defaults(fn=cmd_prism)
     s = sub.add_parser("bundle", help="client folder for friends and/or server folder with start.sh"); s.set_defaults(fn=cmd_bundle)
     s.add_argument("what", choices=["client", "server", "both"], nargs="?", default="both"); s.add_argument("--out")
+
+    s = sub.add_parser("catalog", help="families of mods: list, show one, verify slugs on Modrinth"); s.set_defaults(fn=cmd_catalog)
+    s.add_argument("what", choices=["list", "show", "tags", "verify"], nargs="?", default="list"); s.add_argument("--family", help="id glob or part of the title")
+    s.add_argument("--catalog", help="another families.json"); s.add_argument("--json", action="store_true")
+
+    s = sub.add_parser("design", help="turn wanted tags into a mods.txt proposal"); s.set_defaults(fn=cmd_design)
+    s.add_argument("--want", required=True, help="comma-separated tags, see `catalog tags`"); s.add_argument("--avoid", help="tags to leave out")
+    s.add_argument("--include", help="family ids to force in"); s.add_argument("--exclude", help="family ids to leave out")
+    s.add_argument("--no-grind", action="store_true", help="drop grind=high families"); s.add_argument("--no-addons", action="store_true")
+    s.add_argument("--minecraft"); s.add_argument("--loader", choices=["forge", "neoforge", "fabric", "quilt"])
+    s.add_argument("--tier", choices=list(catalog.TIERS), help="hardware tier; or give --ram/--gpu/--detect")
+    s.add_argument("--ram", type=int, help="GB"); s.add_argument("--gpu", choices=list(hardware.GPU_KINDS)); s.add_argument("--detect", action="store_true", help="detect this machine")
+    s.add_argument("--verify", action="store_true", help="check every slug on Modrinth"); s.add_argument("--write", action="store_true", help="write mods.txt")
+    s.add_argument("--force", action="store_true"); s.add_argument("--catalog"); s.add_argument("--json", action="store_true")
+
+    s = sub.add_parser("hardware", help="heap, tier, shaders and perf mods for a machine"); s.set_defaults(fn=cmd_hardware)
+    s.add_argument("--ram", type=int, help="GB (default: detect)"); s.add_argument("--gpu", choices=list(hardware.GPU_KINDS))
+    s.add_argument("--apply", action="store_true", help="write memory_mb and hardware into pack.json, add the perf family to mods.txt"); s.add_argument("--json", action="store_true")
+
+    s = sub.add_parser("registry", help="index items, tags and recipes from the pack's jars into registry.json"); s.set_defaults(fn=cmd_registry)
+    s.add_argument("--mods", help="jar folder (default: server/mods)"); s.add_argument("--out"); s.add_argument("--json", action="store_true")
+
+    s = sub.add_parser("tune", help="tune.json -> KubeJS scripts, every id checked against the registry"); s.set_defaults(fn=cmd_tune)
+    s.add_argument("what", choices=["init", "check", "build", "verify"], nargs="?", default="build")
+    s.add_argument("--namespace", help="for init: namespace of new items"); s.add_argument("--difficulty", choices=list(tune.DIFFICULTIES), help="set the preset before building")
+    s.add_argument("--json", action="store_true")
 
     s = sub.add_parser("help-syntax", help="print the mods.txt and pack.json syntax"); s.set_defaults(fn=cmd_help_syntax)
 
