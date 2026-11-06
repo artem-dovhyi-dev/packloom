@@ -207,6 +207,11 @@ def _split(csv) -> list[str]:
 
 
 def cmd_catalog(args):
+    if args.what == "page":
+        pack = _pack(args)
+        info = cmd_catalog_page(pack, Path(args.out or pack.dir / "catalog.html"))
+        print(f"{info['path']}: {info['families']} families for {info['game']}; publish it as an artifact with the db capability (see /pack-design)")
+        return
     cat = catalog.load(Path(args.catalog) if args.catalog else None)
     if args.what == "tags":
         for t, d in cat["tags"].items():
@@ -234,6 +239,25 @@ def cmd_catalog(args):
                 print(f"           {k}: " + ", ".join(l.split()[0] for l in lines))
             for k, adds in f.get("addons", {}).items():
                 print(f"           addons {k}: " + ", ".join(f"{a} ({w})" for a, w in adds))
+
+
+def cmd_catalog_page(pack: Pack, out: Path) -> dict:
+    """The catalog as an interactive page: families trimmed to the pack's game and loader, embedded as JSON
+    in lib/packloom/catalog_page.html. Published as an artifact by /pack-design; the viewer's picks land in
+    its db at picks/current, which the skill reads back."""
+    cat = catalog.load()
+    key = f"{pack.minecraft}/{pack.loader}"
+    fams = []
+    for f in cat["families"]:
+        mods = f.get("mods", {}).get(key)
+        if not mods:
+            continue
+        fams.append({k: f.get(k) for k in ("id", "title", "tags", "group", "priority", "grind", "weight", "summary", "when", "pick", "default", "pairs_with") if f.get(k) is not None}
+                    | {"mods": [m.split()[0].split("@")[0] for m in mods], "addons": [[a[0].split("@")[0], a[1]] for a in f.get("addons", {}).get(key, [])]})
+    data = {"game": key, "tags": cat["tags"], "families": fams}
+    tpl = Path(__file__).with_name("catalog_page.html").read_text(encoding="utf-8")
+    out.write_text(tpl.replace("/*DATA*/", json.dumps(data, ensure_ascii=False).replace("</", "<\\/")), encoding="utf-8")
+    return {"path": str(out), "families": len(fams), "game": key}
 
 
 def cmd_design(args):
@@ -507,7 +531,7 @@ def main(argv=None):
     s.add_argument("what", choices=["client", "server", "both"], nargs="?", default="both"); s.add_argument("--out")
 
     s = sub.add_parser("catalog", help="families of mods: list, show one, verify slugs on Modrinth"); s.set_defaults(fn=cmd_catalog)
-    s.add_argument("what", choices=["list", "show", "tags", "verify"], nargs="?", default="list"); s.add_argument("--family", help="id glob or part of the title")
+    s.add_argument("what", choices=["list", "show", "tags", "verify", "page"], nargs="?", default="list"); s.add_argument("--family", help="id glob or part of the title"); s.add_argument("--out", help="page: output html (default <pack>/catalog.html)")
     s.add_argument("--catalog", help="another families.json"); s.add_argument("--json", action="store_true")
 
     s = sub.add_parser("design", help="turn wanted tags into a mods.txt proposal"); s.set_defaults(fn=cmd_design)

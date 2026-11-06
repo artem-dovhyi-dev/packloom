@@ -418,3 +418,18 @@ class PixelTests(unittest.TestCase):
         from packloom import tune
         js = tune.startup_script([{"id": "t:dust", "icon": {"texture": "divinerpg:item/realmite_dust"}}])
         self.assertIn('.texture("divinerpg:item/realmite_dust")', js)
+
+
+class CatalogPageTests(unittest.TestCase):
+    def test_page_embeds_families_for_the_pack(self):
+        from packloom import cli
+        from packloom.manifest import Pack
+        with tempfile.TemporaryDirectory() as d:
+            pack = Pack(dir=Path(d), name="T", version="1", minecraft="1.20.1", loader="forge")
+            info = cli.cmd_catalog_page(pack, Path(d) / "catalog.html")
+            html = (Path(d) / "catalog.html").read_text()
+        self.assertEqual(info["game"], "1.20.1/forge")
+        self.assertGreater(info["families"], 70)
+        self.assertIn('"id": "thermal"', html)
+        self.assertNotIn("/*DATA*/", html)
+        self.assertIn("picks/current", html)

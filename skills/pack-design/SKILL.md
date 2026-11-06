@@ -1,10 +1,40 @@
 ---
 name: pack-design
 description: Turn a description of the modpack someone wants ("RPG plus industry, some farming, a pretty world, not much grind, runs on my laptop") into a mods.txt proposal from the packloom catalog of mod families, verified against Modrinth. Use when a user describes a pack in words, asks what mods to put together, or wants a pack that fits their machine.
-allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/run.py *), Read, Write
+allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/run.py *), Read, Write, Artifact, ArtifactData
 ---
 
 # Design a pack from words
+
+## The catalog page: let the person pick on a board, not in a chat
+
+When the Artifact tool is available, start here instead of asking questions: render the catalog as an
+interactive page and publish it, then read the pick back.
+
+```bash
+python3 ${CLAUDE_SKILL_DIR}/scripts/run.py catalog page --out catalog.html     # 80 families for the pack's game and loader
+```
+
+Publish `catalog.html` with the Artifact tool, `icon` "catalog", and
+`capabilities: {"db": {"rules": [{"path": "", "read": "view", "write": "admin"}]}}` (only the owner and
+editors can write a pick; everyone the page is shared with can read it). Republish the same file to keep the
+URL when the catalog changes. On the page the person marks tags (want / avoid), ticks or crosses families,
+switches a group (Thermal ↔ Create), toggles no-grind, and presses **Передати Клоду**; that writes
+`picks/current` into the artifact's db:
+
+```json
+{ "game": "1.20.1/forge", "want": ["tech", "rpg"], "avoid": [], "include": ["create"], "exclude": [],
+  "no_grind": true, "families": ["create", "mekanism", "..."], "command": "design --want tech,rpg --include create --no-grind --verify --write", "saved_at": "..." }
+```
+
+When they say they have picked (or ask to build from the page), read it: ArtifactData `get`, collection
+`picks`, doc_id `current`, the artifact's url. Run the `command` field through run.py (prefix `design`
+flags with the pack's `--minecraft`/`--loader` if there is no pack yet) and continue at step 4 below with the
+result. If the db has no document, the page could not save (no db in that viewer): ask them to press
+**Скопіювати** and paste the command. Never rebuild the pick from memory of the page; the document is the
+record.
+
+## From words, without the page
 
 The catalog (`catalog/families.json` in the plugin) holds **families**: one entry per job (Thermal, Mekanism,
 AE2, DivineRPG, Farmer's Delight, world generation, coop, quality of life, performance...). Each family has

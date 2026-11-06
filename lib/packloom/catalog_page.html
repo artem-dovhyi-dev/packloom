@@ -1,0 +1,299 @@
+<title>Packloom Catalog</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* layout: a workbench — one scrolling board of areas, a sticky order slip on the right that becomes a bottom sheet on phones */
+:root {
+  --bg: #f3efe6; --panel: #fbf9f3; --ink: #1f2320; --muted: #585c54; --line: #d9d3c4;
+  --accent: #2f7d4f; --accent-ink: #ffffff; --accent-soft: #dcefe1;
+  --want: #2f7d4f; --avoid: #b4452c; --avoid-soft: #f6e0d8; --extra: #6e716a;
+  --chip: #ebe6d9; --shadow: 0 1px 2px rgba(31,35,32,.08), 0 8px 24px rgba(31,35,32,.06);
+  --display: "Chakra Petch", "Trebuchet MS", sans-serif; --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif; --mono: "IBM Plex Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1b1d1a; --panel: #242723; --ink: #ece8dc; --muted: #b3b5ab; --line: #3a3d37;
+  --accent: #6fcf8f; --accent-ink: #10281a; --accent-soft: #24402e;
+  --want: #6fcf8f; --avoid: #ef8b6e; --avoid-soft: #4a2a21; --extra: #7c7f76;
+  --chip: #30332e; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #1b1d1a; --panel: #242723; --ink: #ece8dc; --muted: #b3b5ab; --line: #3a3d37;
+  --accent: #6fcf8f; --accent-ink: #10281a; --accent-soft: #24402e;
+  --want: #6fcf8f; --avoid: #ef8b6e; --avoid-soft: #4a2a21; --extra: #7c7f76;
+  --chip: #30332e; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3); color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); margin: 0 }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 120px; max-width: 1240px; margin: 0 auto }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0 }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: .01em }
+.lede { color: var(--muted); max-width: 64ch; margin: 6px 0 0 }
+.steps { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; align-items: start; margin-top: 20px }
+@media (max-width: 860px) { .steps { grid-template-columns: minmax(0, 1fr) } }
+.board { min-width: 0; display: grid; gap: 22px }
+section.step { display: grid; gap: 10px }
+.eyebrow { font-family: var(--display); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted) }
+h2 { font-size: 20px; font-weight: 600 }
+.chips { display: flex; flex-wrap: wrap; gap: 8px }
+.chip { border: 1px solid var(--line); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: 500 14px var(--body); cursor: pointer; display: inline-flex; gap: 6px; align-items: center }
+.chip small { color: var(--muted); font-weight: 400 }
+.chip[data-state="want"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.chip[data-state="want"] small { color: inherit; opacity: .85 }
+.chip[data-state="avoid"] { background: var(--avoid-soft); color: var(--avoid); border-color: var(--avoid); text-decoration: line-through }
+.chip:focus-visible, .card:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.hint { color: var(--muted); font-size: 13px }
+.area { display: grid; gap: 8px }
+.area-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap }
+.area-head .desc { color: var(--muted); font-size: 13px }
+.area-head .count { margin-left: auto; font: 500 12px var(--mono); color: var(--muted) }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px }
+.card { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: grid; gap: 4px; min-width: 0; color: var(--ink); font: inherit; position: relative }
+.card .t { display: flex; gap: 8px; align-items: center; font-family: var(--display); font-weight: 600; font-size: 15px }
+.card .mark { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--line); display: inline-grid; place-items: center; font-size: 12px; flex: none; color: var(--accent-ink) }
+.card .s { color: var(--muted); font-size: 13px; line-height: 1.35 }
+.card .meta { display: flex; gap: 6px; flex-wrap: wrap; font: 500 11px var(--mono); color: var(--muted); margin-top: 2px }
+.card .meta span { background: var(--chip); border-radius: 4px; padding: 1px 6px }
+.card[data-state="auto"], .card[data-state="include"], .card[data-state="default"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+.card[data-state="auto"] .mark, .card[data-state="include"] .mark, .card[data-state="default"] .mark { background: var(--accent); border-color: var(--accent) }
+.card[data-state="exclude"] { opacity: .55 } .card[data-state="exclude"] .mark { border-color: var(--avoid); color: var(--avoid) }
+.card[data-state="exclude"] .t { text-decoration: line-through }
+.card.extra { border-style: dashed }
+.card .why { font-size: 11px; color: var(--accent); font-weight: 600 }
+.card[data-state="exclude"] .why { color: var(--avoid) }
+.slip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 14px; display: grid; gap: 10px; min-width: 0 }
+.slip h2 { font-size: 17px }
+.nums { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px }
+.num { background: var(--chip); border-radius: 8px; padding: 8px 10px }
+.num b { display: block; font: 600 20px var(--display); font-variant-numeric: tabular-nums }
+.num span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em }
+.picked { display: flex; flex-wrap: wrap; gap: 4px; font-size: 12px }
+.picked i { font-style: normal; background: var(--accent-soft); color: var(--ink); border-radius: 4px; padding: 1px 6px }
+.picked i.x { background: var(--avoid-soft); text-decoration: line-through }
+pre.cmd { font: 12px/1.45 var(--mono); background: var(--chip); border-radius: 8px; padding: 10px; margin: 0; white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow: auto }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center }
+button.btn { font: 600 14px var(--display); border-radius: 8px; padding: 9px 14px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); cursor: pointer }
+button.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+button.btn:disabled { opacity: .5; cursor: default }
+.status { font-size: 13px; color: var(--muted); min-height: 1.4em }
+.status.ok { color: var(--accent) } .status.err { color: var(--avoid) }
+label.tog { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer }
+label.tog input { accent-color: var(--accent) }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted) }
+.legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line) }
+.legend .lg-auto b { background: var(--accent); border-color: var(--accent) } .legend .lg-extra b { border-style: dashed }
+@media (max-width: 860px) {
+  .slip { position: fixed; left: 0; right: 0; bottom: 0; top: auto; border-radius: 14px 14px 0 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); max-height: 55vh; overflow: auto; z-index: 5 }
+  .slip.collapsed > :not(.slip-head) { display: none }
+  .slip-head { cursor: pointer }
+}
+@media (min-width: 861px) { .slip-head .toggle { display: none } }
+@media (prefers-reduced-motion: no-preference) { .card, .chip { transition: border-color .12s, background .12s, opacity .12s } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">packloom · /pack-design</div>
+    <h1>Каталог родин модів</h1>
+    <p class="lede">Пак збирається не з модів, а з родин: Thermal — це сім модів і три аддони, одна картка. Познач, що хочеш, подивись, що каталог вибрав сам, поправ картками, і натисни «Передати Клоду». Далі Claude запускає <code>design</code> із цим вибором і перевіряє кожен мод на Modrinth.</p>
+  </header>
+
+  <div class="steps">
+    <div class="board">
+      <section class="step" id="step-tags">
+        <div class="eyebrow">1 · Що хочеш</div>
+        <h2>Теги</h2>
+        <p class="hint">Клік: хочу. Ще клік: уникати. Третій: байдуже. База (QoL, продуктивність, баланс, логістика, текстури) входить завжди.</p>
+        <div class="chips" id="tags"></div>
+        <label class="tog"><input type="checkbox" id="nogrind"> Без гринду: родини з важким гриндом випадають, їхні аддони теж</label>
+      </section>
+
+      <section class="step">
+        <div class="eyebrow">2 · Що каталог обрав</div>
+        <h2>Родини за сферами</h2>
+        <div class="legend">
+          <span class="lg-auto"><b></b>обрано (тегом або вручну)</span>
+          <span><b></b>є в каталозі, клік додає</span>
+          <span class="lg-extra"><b></b>додаткова родина: лише вручну</span>
+          <span>Однойменна група («один на задачу»): клік по іншій картці групи міняє вибір</span>
+        </div>
+        <div id="areas" class="board"></div>
+      </section>
+    </div>
+
+    <aside class="slip" id="slip">
+      <div class="slip-head" id="sliphead">
+        <h2>Замовлення <span class="toggle hint">· торкнись, щоб розгорнути</span></h2>
+      </div>
+      <div class="nums">
+        <div class="num"><b id="n-fam">0</b><span>родин</span></div>
+        <div class="num"><b id="n-mods">0</b><span>модів</span></div>
+        <div class="num"><b id="n-grind">—</b><span>гринд</span></div>
+      </div>
+      <div class="picked" id="picked"></div>
+      <pre class="cmd" id="cmd"></pre>
+      <div class="row">
+        <button class="btn primary" id="send">Передати Клоду</button>
+        <button class="btn" id="copy">Скопіювати</button>
+      </div>
+      <div class="status" id="status"></div>
+    </aside>
+  </div>
+</div>
+
+<script id="catalog-data" type="application/json">/*DATA*/</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById("catalog-data").textContent);
+  const TAGS = DATA.tags, FAM = DATA.families, GAME = DATA.game;
+  const BASE = new Set(["qol", "perf", "balance", "tune"]);
+  const AREAS = ["tech", "storage", "magic", "rpg", "adventure", "combat", "mobs", "survival", "farming", "food", "worldgen", "decor", "coop", "quests", "visual"];
+  const UA = { tech: "Індустрія", storage: "Сховища й логістика", magic: "Магія", rpg: "RPG", adventure: "Пригоди", combat: "Бій", mobs: "Істоти", survival: "Виживання", farming: "Ферми", food: "Їжа", worldgen: "Світ", decor: "Декор", coop: "Кооператив", quests: "Квести", visual: "Вигляд і звук", qol: "Зручність", perf: "Продуктивність", balance: "Баланс", tune: "Налаштування рецептів" };
+  const state = { tags: {}, manual: {}, nogrind: false };   // tags: want|avoid ; manual: include|exclude
+  const byId = Object.fromEntries(FAM.map(f => [f.id, f]));
+
+  function modsOf(f) { return (f.mods || []).length + (f.addons || []).length; }
+
+  function compute() {
+    const wants = new Set(Object.keys(state.tags).filter(t => state.tags[t] === "want"));
+    const avoids = new Set(Object.keys(state.tags).filter(t => state.tags[t] === "avoid"));
+    const chosen = {}, why = {};
+    for (const f of FAM) {
+      if (state.manual[f.id] === "include") { chosen[f.id] = true; why[f.id] = "вручну"; continue; }
+      if (state.manual[f.id] === "exclude") continue;
+      const av = f.tags.find(t => avoids.has(t));
+      if (av) { why[f.id] = "уникаєш " + av; continue; }
+      if (state.nogrind && f.grind === "high") { why[f.id] = "важкий гринд"; continue; }
+      if (f.default) { chosen[f.id] = true; why[f.id] = "база"; continue; }
+      if (f.pick === "extra") continue;
+      if (f.tags.some(t => wants.has(t))) { chosen[f.id] = true; why[f.id] = "тег " + f.tags.find(t => wants.has(t)); }
+    }
+    // one per group: a manual include wins, else highest priority among the auto picks
+    const groups = {};
+    for (const id in chosen) { const g = byId[id].group; if (g) (groups[g] = groups[g] || []).push(id); }
+    for (const g in groups) {
+      const ids = groups[g]; if (ids.length < 2) continue;
+      const manual = ids.filter(id => state.manual[id] === "include");
+      const keep = manual.length ? manual[manual.length - 1] : ids.sort((a, b) => (byId[b].priority || 0) - (byId[a].priority || 0))[0];
+      for (const id of ids) if (id !== keep) { delete chosen[id]; why[id] = "група: " + byId[keep].title; }
+    }
+    return { wants, avoids, chosen, why };
+  }
+
+  function command(r) {
+    const parts = ["design"];
+    if (r.wants.size) parts.push("--want " + [...r.wants].join(","));
+    if (r.avoids.size) parts.push("--avoid " + [...r.avoids].join(","));
+    const inc = Object.keys(state.manual).filter(id => state.manual[id] === "include");
+    const exc = Object.keys(state.manual).filter(id => state.manual[id] === "exclude");
+    if (inc.length) parts.push("--include " + inc.join(","));
+    if (exc.length) parts.push("--exclude " + exc.join(","));
+    if (state.nogrind) parts.push("--no-grind");
+    return parts.join(" ") + " --verify --write";
+  }
+
+  function render() {
+    const r = compute();
+    document.querySelectorAll("#tags .chip").forEach(c => c.dataset.state = state.tags[c.dataset.tag] || "");
+    document.querySelectorAll(".card").forEach(c => {
+      const id = c.dataset.id, f = byId[id];
+      const st = state.manual[id] === "exclude" ? "exclude" : r.chosen[id] ? (f.default ? "default" : state.manual[id] === "include" ? "include" : "auto") : "";
+      c.dataset.state = st;
+      c.querySelector(".mark").textContent = st === "exclude" ? "×" : st ? "✓" : "";
+      c.querySelector(".why").textContent = st === "exclude" ? "виключено" : (r.why[id] || "");
+    });
+    const ids = Object.keys(r.chosen);
+    const fams = ids.map(id => byId[id]);
+    document.getElementById("n-fam").textContent = fams.length;
+    document.getElementById("n-mods").textContent = fams.reduce((n, f) => n + modsOf(f), 0);
+    const g = { low: 0, medium: 0, high: 0 }; fams.forEach(f => g[f.grind || "medium"]++);
+    document.getElementById("n-grind").textContent = g.high ? "важкий" : g.medium > g.low ? "середній" : "легкий";
+    document.getElementById("picked").innerHTML = fams.map(f => `<i>${f.title}</i>`).join("") +
+      Object.keys(state.manual).filter(id => state.manual[id] === "exclude").map(id => `<i class="x">${byId[id].title}</i>`).join("");
+    document.getElementById("cmd").textContent = "packloom " + command(r);
+    document.querySelectorAll(".area").forEach(a => {
+      const n = [...a.querySelectorAll(".card")].filter(c => c.dataset.state && c.dataset.state !== "exclude").length;
+      a.querySelector(".count").textContent = n ? n + " обрано" : "";
+    });
+    try { localStorage.setItem("packloom-picks", JSON.stringify(state)); } catch (e) {}
+  }
+
+  function buildTags() {
+    const box = document.getElementById("tags");
+    for (const t of Object.keys(TAGS)) {
+      if (BASE.has(t)) continue;
+      const b = document.createElement("button"); b.className = "chip"; b.dataset.tag = t; b.type = "button";
+      b.innerHTML = `${UA[t] || t} <small>${t}</small>`;
+      b.title = TAGS[t];
+      b.addEventListener("click", () => { state.tags[t] = state.tags[t] === "want" ? "avoid" : state.tags[t] === "avoid" ? "" : "want"; if (!state.tags[t]) delete state.tags[t]; render(); });
+      box.appendChild(b);
+    }
+  }
+
+  function card(f) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "card" + (f.pick === "extra" ? " extra" : ""); b.dataset.id = f.id;
+    const meta = [`${modsOf(f)} mods`, `grind ${f.grind || "medium"}`, f.weight ? `weight ${f.weight}` : "", f.group ? `1 of ${f.group}` : "", f.pick === "extra" ? "extra" : "core"].filter(Boolean);
+    b.innerHTML = `<div class="t"><span class="mark"></span><span>${f.title}</span></div>
+      <div class="s">${f.summary || ""}</div>
+      <div class="meta">${meta.map(m => `<span>${m}</span>`).join("")}</div>
+      <div class="why"></div>`;
+    b.title = (f.when ? f.when + "\n" : "") + (f.mods || []).join(", ") + ((f.addons || []).length ? "\n+ " + f.addons.map(a => a[0]).join(", ") : "");
+    b.addEventListener("click", () => {
+      const r = compute();
+      if (state.manual[f.id] === "include") state.manual[f.id] = "exclude";
+      else if (state.manual[f.id] === "exclude") delete state.manual[f.id];
+      else if (r.chosen[f.id]) state.manual[f.id] = "exclude";
+      else state.manual[f.id] = "include";
+      render();
+    });
+    return b;
+  }
+
+  function buildAreas() {
+    const root = document.getElementById("areas");
+    const placed = new Set();
+    const groupsOrder = [...AREAS, ...[...BASE].filter(t => TAGS[t])];
+    for (const t of groupsOrder) {
+      const fams = FAM.filter(f => !placed.has(f.id) && (f.tags[0] === t || (!AREAS.includes(f.tags[0]) && f.tags.includes(t))));
+      if (!fams.length) continue;
+      fams.forEach(f => placed.add(f.id));
+      const sec = document.createElement("div"); sec.className = "area";
+      sec.innerHTML = `<div class="area-head"><h3>${UA[t] || t}</h3><span class="desc">${TAGS[t] || ""}</span><span class="count"></span></div><div class="cards"></div>`;
+      const grid = sec.querySelector(".cards");
+      fams.sort((a, b) => (a.pick === "extra") - (b.pick === "extra") || (b.priority || 0) - (a.priority || 0)).forEach(f => grid.appendChild(card(f)));
+      root.appendChild(sec);
+    }
+  }
+
+  async function send() {
+    const r = compute(), btn = document.getElementById("send"), st = document.getElementById("status");
+    btn.disabled = true; st.className = "status"; st.textContent = "Зберігаю…";
+    const doc = { game: GAME, want: [...r.wants], avoid: [...r.avoids],
+      include: Object.keys(state.manual).filter(id => state.manual[id] === "include"),
+      exclude: Object.keys(state.manual).filter(id => state.manual[id] === "exclude"),
+      no_grind: state.nogrind, families: Object.keys(r.chosen), command: command(r), saved_at: new Date().toISOString() };
+    try {
+      const db = await window.claude?.use?.("db");
+      if (!db) throw new Error("no-db");
+      await db.doc("picks/current").set(doc);
+      st.className = "status ok"; st.textContent = "Збережено. Скажи Клоду: «збери пак за моїм вибором».";
+    } catch (e) {
+      st.className = "status err"; st.textContent = e.message === "no-db" ? "Тут база недоступна: скопіюй команду і встав у чат." : "Не збереглося: скопіюй команду і встав у чат.";
+    } finally { btn.disabled = false; }
+  }
+
+  function copy() {
+    const text = document.getElementById("cmd").textContent, st = document.getElementById("status");
+    const fallback = () => { const s = window.getSelection(), rg = document.createRange(); rg.selectNodeContents(document.getElementById("cmd")); s.removeAllRanges(); s.addRange(rg); st.textContent = "Виділено, натисни Ctrl/Cmd+C."; };
+    try { navigator.clipboard.writeText(text).then(() => { st.className = "status ok"; st.textContent = "Скопійовано."; }, fallback); } catch (e) { fallback(); }
+  }
+
+  try { Object.assign(state, JSON.parse(localStorage.getItem("packloom-picks") || "{}")); } catch (e) {}
+  buildTags(); buildAreas();
+  document.getElementById("nogrind").checked = !!state.nogrind;
+  document.getElementById("nogrind").addEventListener("change", e => { state.nogrind = e.target.checked; render(); });
+  document.getElementById("send").addEventListener("click", send);
+  document.getElementById("copy").addEventListener("click", copy);
+  const slip = document.getElementById("slip");
+  if (matchMedia("(max-width: 860px)").matches) slip.classList.add("collapsed");
+  document.getElementById("sliphead").addEventListener("click", () => { if (matchMedia("(max-width: 860px)").matches) slip.classList.toggle("collapsed"); });
+  render();
+})();
+</script>
