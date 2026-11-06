@@ -11,6 +11,7 @@ user-invocable: false
   pack.json          name, version, minecraft, loader, loader_version, memory_mb, hardware (from `hardware --apply`)
   mods.txt           one entry per line; Modrinth slugs, ftb:, url:, manual:; comments with #
   tune.json          recipes, pack-only items, integrations between mods, difficulty presets -> KubeJS scripts (`tune build`), INTEGRATIONS.md (`tune doc`)
+  icons.json         16x16 icons of those items as text grids (material + colour -> shade ramp) -> textures/item PNGs (`icons build`)
   overrides/         copied verbatim into the instance: config/, defaultconfigs/, kubejs/, mods/ (non-Modrinth jars), options.txt
   registry.json      every item, tag, recipe, entity, dimension in the jars (`registry`); what `tune` and quest generators check against
   <Name>-<ver>.mrpack  build output: modrinth.index.json (download links + hashes) + overrides/
@@ -20,6 +21,7 @@ user-invocable: false
 
 Workflow: words → `/pack-design` → `mods.txt` → `/pack-build` → `/pack-test` → `/pack-triage` on failure → repeat.
 Recipes, integrations and difficulty: `tune.json` → `/pack-tune` (`tune build`) → `/pack-build` → `/pack-test` → `tune verify` → `tune doc`.
+Icons for the pack's own items: `icons.json` → `/pack-icons` (`icons adapt` from the parent mod's texture, `icons build`, `icons sheet` to look).
 A pack with two lines (tech and RPG, say) should bridge them: 16-24 integrations by `docs/integrations.md`.
 Machine: `/pack-hardware` sets `memory_mb` and the performance family.
 The client (Prism Launcher) imports the mrpack; the server test runs the same jars headless, which catches

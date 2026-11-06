@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-from . import build as build_mod, bundle, catalog, hardware, keybinds, loaders, modrinth, prism, registry, server, triage, tune
+from . import build as build_mod, bundle, catalog, hardware, keybinds, loaders, modrinth, pixel, prism, registry, server, triage, tune
 from .java import find_java
 from .manifest import Pack, find_pack_dir, load_pack, write_pack
 
@@ -397,6 +397,76 @@ def cmd_tune(args):
     sys.exit(0 if rep.ok else 1)
 
 
+def _texture_jars(pack: Pack) -> list[Path]:
+    """Every jar an icon reference can come from: vanilla (server -extra.jar or the Prism client jar), the
+    pack's server mods and the jars shipped in overrides/mods."""
+    libs = prism.data_dir() / "libraries"
+    client = sorted(libs.rglob(f"minecraft-{pack.minecraft}-client.jar")) if libs.exists() else []
+    return client + sorted((pack.server_dir / "mods").glob("*.jar")) + sorted((pack.overrides / "mods").glob("*.jar"))
+
+
+def cmd_icons(args):
+    pack = _pack(args)
+    path = pack.dir / "icons.json"
+    data = pixel.load_icons(path)
+    icons = {i["name"]: i for i in data.get("icons", [])}
+    if args.what == "init":
+        if not path.exists():
+            path.write_text(json.dumps({"icons": [pixel.ICON_TEMPLATE]}, indent=2) + "\n", encoding="utf-8")
+        print(f"{path} ready: material metal|gem|dust|wood|cloth|energy|stone + color give the ramp o D M L H S; see the pack-icons skill")
+        return
+    if args.what == "build":
+        for rel in pixel.build_all(pack.dir, pack.overrides, data):
+            print(f"  wrote {rel}")
+        print(f"{len(icons)} icon(s) from icons.json")
+        return
+    jars = _texture_jars(pack)
+    if args.what == "adapt":
+        ref, name = args.refs[0], args.refs[1] if len(args.refs) > 1 else None
+        px = pixel.find_texture(jars, ref)
+        if px is None:
+            sys.exit(f"{ref}: not a texture in {len(jars)} jar(s)")
+        rows, extra = pixel.adapt(px)
+        spec = {"name": name or ref, "from": ref, "material": args.material, "color": args.color, "outline": False,
+                "extra": extra, "grid": rows}
+        print("\n".join("  " + r for r in rows))
+        print("  ramp o D M L H S from " + args.color + " " + args.material + (f"; kept grey: {extra}" if extra else ""))
+        if name:
+            data["icons"] = [i for i in data.get("icons", []) if i["name"] != name] + [spec]
+            path.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(f"{path.name}: {name} written; edit the grid, then `icons build` and `icons sheet {name} {ref}`")
+        return
+    if args.what == "grid":
+        for ref in args.refs:
+            px = pixel.build_icon(icons[ref]) if ref in icons else pixel.find_texture(jars, ref)
+            if px is None:
+                print(f"{ref}: not an icon in icons.json and not a texture in {len(jars)} jar(s)")
+                continue
+            rows, legend = pixel.to_grid(pixel.crop16(px))
+            print(f"{ref}  ({len(legend)} colours)")
+            print("\n".join("  " + r for r in rows))
+            print("  " + "  ".join(f"{k}={v}" for k, v in legend.items()))
+        return
+    if args.what == "sheet":
+        names = args.refs or list(icons)
+        cells, order, missing = [], [], []
+        for ref in names:
+            px = pixel.build_icon(icons[ref]) if ref in icons else pixel.find_texture(jars, ref)
+            if px is None:
+                missing.append(ref)
+                continue
+            cells.append(px); order.append(ref)
+        out = Path(args.out or pack.dir / "icons-sheet.png")
+        cols = args.cols or min(6, max(1, len(cells)))
+        pixel.write_png(out, pixel.sheet(cells, scale=args.scale, cols=cols))
+        print(f"{out}: {len(cells)} cell(s), {cols} per row, x{args.scale}")
+        for i in range(0, len(order), cols):
+            print("  row " + str(i // cols + 1) + ": " + ", ".join(order[i:i + cols]))
+        for m in missing:
+            print(f"  MISSING {m}")
+        return
+
+
 def cmd_help_syntax(args):
     print(Path(__file__).with_name("SYNTAX.md").read_text())
 
@@ -461,6 +531,13 @@ def main(argv=None):
     s.add_argument("what", choices=["init", "check", "build", "verify", "doc"], nargs="?", default="build")
     s.add_argument("--namespace", help="for init: namespace of new items"); s.add_argument("--difficulty", choices=list(tune.DIFFICULTIES), help="set the preset before building")
     s.add_argument("--json", action="store_true")
+
+    s = sub.add_parser("icons", help="icons.json -> 16x16 item textures; sheets and grids of reference textures from the jars"); s.set_defaults(fn=cmd_icons)
+    s.add_argument("what", choices=["init", "build", "sheet", "grid", "adapt"])
+    s.add_argument("refs", nargs="*", help="icon names from icons.json or texture refs like minecraft:iron_ingot, thermal:item/signalum_plate_0")
+    s.add_argument("--out", help="sheet: output PNG (default <pack>/icons-sheet.png)")
+    s.add_argument("--scale", type=int, default=8); s.add_argument("--cols", type=int)
+    s.add_argument("--color", default="#8a8aff", help="adapt: base colour of the ramp"); s.add_argument("--material", default="metal", choices=list(pixel.MATERIALS))
 
     s = sub.add_parser("help-syntax", help="print the mods.txt and pack.json syntax"); s.set_defaults(fn=cmd_help_syntax)
 

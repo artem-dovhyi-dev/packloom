@@ -18,9 +18,13 @@ Every command has `--help`.
 | `registry [--mods dir] [--out f]` | index items, blocks, entities, dimensions, item tags, recipes from `server/mods` plus the vanilla and loader jars | `registry.json` |
 | `tune init [--namespace ns]` | add KubeJS and Rhino to mods.txt, write a `tune.json` skeleton | `tune.json`, `mods.txt` |
 | `tune check [--difficulty d]` | validate `tune.json` against `registry.json`; prints which mod pairs the integrations bridge | (`--difficulty` writes the preset into tune.json) |
-| `tune build [--difficulty d]` | check, then write the KubeJS scripts and placeholder icons | `overrides/kubejs/startup_scripts/packloom.items.js`, `server_scripts/packloom.tune.js`, `assets/<ns>/textures/item/*.png` |
+| `tune build [--difficulty d]` | check, then write the KubeJS scripts, and a placeholder icon where no PNG exists | `overrides/kubejs/startup_scripts/packloom.items.js`, `server_scripts/packloom.tune.js`, `assets/<ns>/textures/item/*.png` |
 | `tune verify` | after a server run: did KubeJS load the scripts, how many recipes changed, any script errors | |
 | `tune doc` | the integrations of `tune.json` as a page for players | `INTEGRATIONS.md` |
+| `icons init\|build` | `icons.json` (text grids + a material and colour per icon) → 16×16 item textures; `build` overwrites, icons.json is the source | `overrides/kubejs/assets/<ns>/textures/item/*.png` |
+| `icons grid <ref...>` | a texture from the pack's jars (`divinerpg:realmite_ingot`, `thermal:item/bronze_plate_0`, `minecraft:iron_sword`) as letters with a colour legend | |
+| `icons adapt <ref> <name> --color #hex --material metal\|gem\|dust\|wood\|cloth\|energy\|stone` | the reference as a ramp grid (brightness → `o D M L H S`, greys kept), written into icons.json to edit | `icons.json` |
+| `icons sheet [names/refs...] [--out f] [--cols n] [--scale n]` | the pack's icons and reference textures side by side, scaled up, to look at before shipping | `icons-sheet.png` |
 | `keys [--options f] [--notes keybinds.json] [--apply]` | keyboard map from the instance's `options.txt` | `keybinds.html`; `options.txt` with `--apply` |
 | `prism` | locate the Prism instance for this pack | |
 | `bundle [client\|server\|both] [--out dir]` | folders for friends (mrpack, docs, keybinds.html) and for a host (mods, configs, kubejs, start.sh) + zips | `dist/` |

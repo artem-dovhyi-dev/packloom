@@ -371,3 +371,50 @@ class TuneVerifyTests(unittest.TestCase):
             v = tune.verify_logs(load_pack(Path(d)), rep)
             self.assertEqual(v["counts"]["modified"], 0)
             self.assertEqual(v["mismatch"], ["modified: tune.json expects 1, the server modified 0 (a rule on a recipe type KubeJS cannot edit?)"])
+
+
+class PixelTests(unittest.TestCase):
+    def test_ramp_is_hue_shifted_and_ordered(self):
+        from packloom import pixel
+        r = pixel.ramp("#ca6b1a", "metal")
+        lum = [sum(pixel.hex_rgb(r[k])) for k in "oDMLHS"]
+        self.assertEqual(lum, sorted(lum))                       # darker to lighter
+        self.assertEqual(r["M"], "#ca6b1a")
+        self.assertNotEqual(r["o"], "#000000")
+        self.assertNotEqual(pixel.ramp("#ca6b1a", "energy")["D"], r["D"])
+
+    def test_png_roundtrip_grid_and_adapt(self):
+        from packloom import pixel
+        spec = {"name": "t:ingot", "material": "metal", "color": "#ca6b1a", "extra": {"Y": "#ffe84a"},
+                "grid": ["................"] * 6 + ["....MMMMMMMM....", "....MYMMMMMM....", "....DDDDDDDD...."] + ["................"] * 7}
+        px = pixel.build_icon(spec)
+        self.assertEqual(px[5][4][3], 255)                       # auto outline above the body
+        self.assertEqual(px[0][0][3], 0)
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "x.png"
+            pixel.write_png(path, px)
+            back = pixel.read_png(path.read_bytes())
+        self.assertEqual(back, px)
+        rows, legend = pixel.to_grid(px)
+        self.assertEqual(len(rows), 16)
+        self.assertEqual(rows[9][4], "o")                        # the outline is the darkest colour
+        self.assertEqual(legend["o"], pixel.ramp("#ca6b1a", "metal")["o"])
+        grid, extra = pixel.adapt(px)
+        self.assertEqual(grid[6][4], "M")
+        self.assertIn(grid[8][4], "oD")
+        self.assertEqual(extra, {})
+        with self.assertRaises(ValueError):
+            pixel.parse_grid(["..."] * 16)
+
+    def test_sheet_and_handle(self):
+        from packloom import pixel
+        g = pixel.parse_grid(["................"] * 16)
+        pixel.handle(g, 3, 11, 9)
+        self.assertEqual(g[3][9], "w"); self.assertEqual(g[3][10], "h"); self.assertEqual(g[11][1], "w")
+        sheet = pixel.sheet([pixel.render(g, {"w": "#493615", "h": "#684e1e", "a": "#281e0b"})] * 2, scale=2, cols=2)
+        self.assertEqual((len(sheet[0]), len(sheet)), (2 * 17 * 2, 17 * 2))
+
+    def test_borrowed_texture_in_startup_script(self):
+        from packloom import tune
+        js = tune.startup_script([{"id": "t:dust", "icon": {"texture": "divinerpg:item/realmite_dust"}}])
+        self.assertIn('.texture("divinerpg:item/realmite_dust")', js)

@@ -40,7 +40,7 @@ packloom bundle
   "enabledPlugins": { "packloom@packloom": true } }
 ```
 
-З'являться команди `/pack-design`, `/pack-build`, `/pack-test`, `/pack-triage`, `/pack-tune`, `/pack-hardware`, `/pack-keys`.
+З'являться команди `/pack-design`, `/pack-build`, `/pack-test`, `/pack-triage`, `/pack-tune`, `/pack-icons`, `/pack-hardware`, `/pack-keys`.
 
 ## Чого не робить
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from . import registry
+from . import pixel, registry
 from .manifest import Pack
 
 ITEM_TYPES = ("basic", "sword", "pickaxe", "axe", "shovel", "hoe", "helmet", "chestplate", "leggings", "boots")
@@ -367,6 +367,8 @@ def startup_script(items: list[dict]) -> str:
             call += f".rarity({js_str(it['rarity'])})"
         if it.get("glow"):
             call += ".glow(true)"
+        if it.get("icon", {}).get("texture"):             # borrow a texture that already exists in a jar
+            call += f".texture({js_str(it['icon']['texture'])})"
         if t == "basic" and it.get("max_stack"):
             call += f".maxStackSize({int(it['max_stack'])})"
         for tip in it.get("tooltip", []):
@@ -467,17 +469,7 @@ def icon_pixels(shape: str, color: str) -> list[list[tuple]]:
     return px
 
 
-def write_png(path: Path, px: list[list[tuple]]) -> None:
-    h, w = len(px), len(px[0])
-    raw = b"".join(b"\x00" + bytes(c for p in row for c in p) for row in px)
-
-    def chunk(tag: bytes, body: bytes) -> bytes:
-        return struct.pack(">I", len(body)) + tag + body + struct.pack(">I", zlib.crc32(tag + body) & 0xFFFFFFFF)
-
-    data = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0))
-    data += chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b"")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
+write_png = pixel.write_png
 
 
 # ---------- entry points ----------
@@ -507,8 +499,8 @@ def build(pack: Pack, idx: dict, data: Optional[dict] = None, write: bool = True
     for it in eff["items"]:
         name = it["id"].split(":", 1)[1]
         png = kube / "assets" / ns / "textures" / "item" / f"{name}.png"
-        if not png.exists():                     # a real texture dropped here is never overwritten
-            icon = it.get("icon", {})
+        icon = it.get("icon", {})
+        if not png.exists() and not icon.get("texture"):  # a real texture dropped here is never overwritten
             write_png(png, icon_pixels(icon.get("shape", "tool" if it.get("type") in TOOL_TYPES else "gem"),
                                        icon.get("color", "#8a8aff")))
             rep.written.append(str(png.relative_to(pack.dir)))

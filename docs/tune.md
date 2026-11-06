@@ -51,7 +51,7 @@ edit `tune.json`, not them.
 | `glow` | bool | enchanted shimmer |
 | `max_stack` | int | basic items |
 | `tooltip` | list of lines | |
-| `icon` | `{ "shape": blade \| ingot \| gem \| orb \| tool \| dust \| plate, "color": "#rrggbb" }` | a 16×16 placeholder PNG, written once; drop a real PNG at `overrides/kubejs/assets/<ns>/textures/item/<path>.png` and it is kept |
+| `icon` | `{ "shape": blade \| ingot \| gem \| orb \| tool \| dust \| plate, "color": "#rrggbb" }` | a 16×16 placeholder PNG, written once; a real icon comes from `icons.json` (`icons build`, see [icons.md](icons.md)) or from a texture that already exists in a jar: `{ "texture": "divinerpg:item/realmite_dust" }` |
 
 Items are never per preset: a world made on `easy` must still have every item on `hard`.
 

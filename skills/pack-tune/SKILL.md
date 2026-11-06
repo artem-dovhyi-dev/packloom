@@ -36,8 +36,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/run.py tune doc                       # INTE
 ```
 
 - `items`: `type` basic | sword | pickaxe | axe | shovel | hoe | helmet | chestplate | leggings | boots; tools and
-  armor take `tier` wood..netherite. `icon` draws a 16x16 placeholder (blade, ingot, gem, orb, tool) that a
-  real PNG at `overrides/kubejs/assets/<ns>/textures/item/<name>.png` replaces (never overwritten).
+  armor take `tier` wood..netherite. `icon` draws a 16x16 placeholder (blade, ingot, gem, orb, tool, dust, plate); the real icon is drawn with
+  `/pack-icons` (icons.json), or borrowed from a jar: `"icon": {"texture": "divinerpg:item/realmite_dust"}`.
 - `recipes`: `shaped`, `shapeless` (`inputs` list) or `custom` (`json` is a raw recipe, for machine recipes:
   `{"type": "thermal:pulverizer", ...}`). Ingredients are item ids or `#tags`.
 - `remove` and `replace_inputs.in` are KubeJS filters: `id`, `mod`, `output`, `type`, `input`. `tune check`

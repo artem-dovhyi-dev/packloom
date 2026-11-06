@@ -40,6 +40,7 @@ proposes, the human decides.
 |---|---|---|
 | "I want RPG and industry, farming, a nice world, no grind, with friends" | `/pack-design` | tags → families from a catalog of 80 (Thermal, Create, Mekanism, AE2, Immersive Engineering, the Aether, Ars Nouveau, Macaw's, Fresh Animations...) → `mods.txt`, every slug verified on Modrinth for your game and loader; same-job families (Thermal vs Create, AE2 vs Refined Storage) are picked by priority and the swap is one flag; quality of life, performance, balance (Almost Unified, Polymorph) and Faithful textures come by default |
 | "Make it harder" / "the quarry should need a diamond block" / "the lines should meet: a sword from DivineRPG and Thermal, Thermal machines that grind Divine ores" | `/pack-tune` | `tune.json` holds items, recipes, removals, input swaps, `easy`/`normal`/`hard` presets and **integrations** (self-contained bridges between mods, 16-24 per pack by the [standard](docs/integrations.md)); every id is checked against the registry (16 000 recipes, 8 800 items in TechPack) with "did you mean" hints; KubeJS scripts and `INTEGRATIONS.md` are generated, never hand-written |
+| "The new items look like placeholders" / "draw an icon in Thermal's style" | `/pack-icons` | `icons.json` holds 16×16 icons as text grids with a material and a colour; the shades are a hue-shifted ramp, the silhouette is adapted from the mod's own texture (`icons adapt divinerpg:realmite_sword ...`), and `icons sheet` puts the result next to its parents so it is judged before it ships |
 | "It has to run on my 16 GB M1" / "my friend has 8 GB" | `/pack-hardware` | heap, tier, shader preset, mod ceiling, Apple Silicon notes; `--apply` writes `memory_mb` and adds the performance family |
 | "Which key does what? B is taken twice" | `/pack-keys` | an interactive keyboard page from `options.txt`, conflicts in red, per-stage filters; `--apply` writes a layout back |
 | "Does it even start?" | `/pack-build`, `/pack-test`, `/pack-triage` | mrpack with hashes, headless server with the right Java, crash log → suspect mods, KubeJS script errors as suspects too |
@@ -81,7 +82,7 @@ In a project that holds a pack, add to `.claude/settings.json`:
 ```
 
 You get `/pack-init`, `/pack-design`, `/pack-add`, `/pack-build`, `/pack-test`, `/pack-triage`, `/pack-tune`,
-`/pack-hardware`, `/pack-keys`. For hacking on the plugin itself: `claude --plugin-dir /path/to/packloom`.
+`/pack-hardware`, `/pack-keys`, `/pack-icons`. For hacking on the plugin itself: `claude --plugin-dir /path/to/packloom`.
 
 ## The pack format
 
@@ -115,6 +116,7 @@ Required dependencies come from Modrinth automatically. Full syntax: `lib/packlo
 - [docs/commands.md](docs/commands.md): every CLI command and flag
 - [docs/tune.md](docs/tune.md): `tune.json` reference and how difficulty presets work
 - [docs/integrations.md](docs/integrations.md): the standard for bridging mods, and TechPack's 19
+- [docs/icons.md](docs/icons.md): icons as text grids, ramps, references from the jars, the sheet
 - [docs/catalog.md](docs/catalog.md): the 80 families, groups, tags, and how to add one
 - [docs/demo.md](docs/demo.md): the recorded terminal session
 - [docs/README.uk.md](docs/README.uk.md): короткий посібник українською
@@ -135,7 +137,7 @@ listed but not forced, no grind by default.
 ## Development
 
 ```bash
-python3 -m unittest discover -s tests          # 34 tests, stdlib unittest
+python3 -m unittest discover -s tests          # 38 tests, stdlib unittest
 PYTHONPATH=lib python3 -m packloom --help
 ```
 
