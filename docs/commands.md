@@ -8,7 +8,7 @@ Every command has `--help`.
 |---|---|---|
 | `init --name N --minecraft 1.20.1 --loader forge [--memory 6144]` | new pack | `pack.json`, empty `mods.txt`, `overrides/` |
 | `catalog [list\|show\|tags\|verify\|page] [--family id] [--out f]` | families of mods; `verify` checks every slug on Modrinth for the pack's game and loader; `page` renders the catalog as an interactive page for the pack's game and loader, to publish as an artifact (the person's picks come back through its db, see `skills/pack-design`) | `catalog.html` with `page` |
-| `design --want tags [--avoid tags] [--include ids] [--exclude ids] [--no-grind] [--no-addons] [--tier\|--ram\|--gpu\|--detect] [--verify] [--write [--force]]` | tags → families → mods.txt proposal | `mods.txt` with `--write` |
+| `design --want tags [--avoid tags] [--include ids] [--exclude ids] [--grind low\|medium\|high] [--no-addons] [--tier\|--ram\|--gpu\|--detect] [--verify] [--write [--force]]` | tags → families → mods.txt proposal, with a progression ladder (`power` stage per family) and balance notes where two families peak at the same stage; `--grind` maps to the tune preset easy/normal/hard | `mods.txt` with `--write` |
 | `search <query> [--type mod\|resourcepack\|shader]` | Modrinth search for the pack's game and loader | |
 | `info <slug>` | project details and compatible versions | |
 | `hardware [--ram GB] [--gpu apple\|nvidia\|amd\|intel] [--apply]` | heap, tier, shaders, perf family | `pack.json` (`memory_mb`, `hardware`), `mods.txt` with `--apply` |

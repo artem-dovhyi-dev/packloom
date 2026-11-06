@@ -433,3 +433,21 @@ class CatalogPageTests(unittest.TestCase):
         self.assertIn('"id": "thermal"', html)
         self.assertNotIn("/*DATA*/", html)
         self.assertIn("picks/current", html)
+
+
+class GrindAndBalanceTests(unittest.TestCase):
+    def test_grind_levels_and_ladder(self):
+        from packloom import catalog
+        cat = catalog.load()
+        low = catalog.design(cat, "1.20.1", "forge", ["tech", "rpg"], grind="low", include=["draconic"])
+        self.assertEqual(low.difficulty, "easy")
+        self.assertIn("divinerpg", [i for i, _ in low.skipped])
+        self.assertIn("draconic", low.ladder()["endgame"])
+        self.assertTrue(any("peak at endgame" in b for b in low.balance))
+        self.assertTrue(any("kept at low grind" in w for p in low.picks if p.family["id"] == "draconic" for w in p.warnings))
+        high = catalog.design(cat, "1.20.1", "forge", ["tech", "rpg"], grind="high")
+        self.assertEqual(high.difficulty, "hard")
+        self.assertIn("divinerpg", [p.family["id"] for p in high.picks])
+        self.assertIn("balance", high.as_dict())
+        self.assertTrue(all(f.get("power") in catalog.STAGES + ("any",) for f in cat["families"]))
+        self.assertTrue(cat["missing"][0]["instead"])

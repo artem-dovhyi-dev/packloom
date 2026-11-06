@@ -251,10 +251,12 @@ def cmd_catalog_page(pack: Pack, out: Path) -> dict:
     for f in cat["families"]:
         mods = f.get("mods", {}).get(key)
         if not mods:
+            fams.append({k: f.get(k) for k in ("id", "title", "tags", "group", "grind", "weight", "power", "summary", "pick") if f.get(k) is not None}
+                        | {"unavailable": sorted(f.get("mods", {}))})
             continue
-        fams.append({k: f.get(k) for k in ("id", "title", "tags", "group", "priority", "grind", "weight", "summary", "when", "pick", "default", "pairs_with") if f.get(k) is not None}
+        fams.append({k: f.get(k) for k in ("id", "title", "tags", "group", "priority", "grind", "weight", "power", "tune_hint", "summary", "when", "pick", "default", "pairs_with") if f.get(k) is not None}
                     | {"mods": [m.split()[0].split("@")[0] for m in mods], "addons": [[a[0].split("@")[0], a[1]] for a in f.get("addons", {}).get(key, [])]})
-    data = {"game": key, "tags": cat["tags"], "families": fams}
+    data = {"game": key, "tags": cat["tags"], "families": fams, "missing": cat.get("missing", [])}
     tpl = Path(__file__).with_name("catalog_page.html").read_text(encoding="utf-8")
     out.write_text(tpl.replace("/*DATA*/", json.dumps(data, ensure_ascii=False).replace("</", "<\\/")), encoding="utf-8")
     return {"path": str(out), "families": len(fams), "game": key}
@@ -270,12 +272,12 @@ def cmd_design(args):
         mc, loader = pack.minecraft, pack.loader
     tier = args.tier or (hardware.from_args(args.ram, args.gpu).tier if (args.ram or args.gpu or args.detect) else "high")
     prop = catalog.design(cat, mc, loader, _split(args.want), _split(args.avoid), tier=tier, include=_split(args.include),
-                          exclude=_split(args.exclude), addons=not args.no_addons, no_grind=args.no_grind)
+                          exclude=_split(args.exclude), addons=not args.no_addons, no_grind=args.no_grind, grind=args.grind)
     if args.json and not args.verify:
         print(json.dumps(prop.as_dict(), indent=2, ensure_ascii=False))
     else:
-        print(f"Proposal for Minecraft {mc} {loader} (tier {tier}): {len(prop.picks)} families, "
-              f"{sum(len(p.lines) for p in prop.picks)} mods.txt lines\n")
+        print(f"Proposal for Minecraft {mc} {loader} (tier {tier}, grind {prop.grind} -> tune difficulty {prop.difficulty}): "
+              f"{len(prop.picks)} families, {sum(len(p.lines) for p in prop.picks)} mods.txt lines\n")
         for p in prop.picks:
             print(f"+ {p.family['title']} [{p.family['id']}]: {'; '.join(p.reasons)}")
             print(f"    {p.family['summary']}")
@@ -285,6 +287,10 @@ def cmd_design(args):
             print("\nskipped:")
             for fid, why in prop.skipped:
                 print(f"  - {fid}: {why}")
+        lad = prop.ladder()
+        print("\nprogression ladder: " + "; ".join(f"{st}: {', '.join(lad[st]) or '-'}" for st in catalog.STAGES))
+        for b in prop.balance:
+            print(f"  ! balance: {b}")
         if prop.available:
             print("\nalso in the catalog for these tags (add one with --include <id>):")
             for fid, title, tags in prop.available:
@@ -537,7 +543,8 @@ def main(argv=None):
     s = sub.add_parser("design", help="turn wanted tags into a mods.txt proposal"); s.set_defaults(fn=cmd_design)
     s.add_argument("--want", required=True, help="comma-separated tags, see `catalog tags`"); s.add_argument("--avoid", help="tags to leave out")
     s.add_argument("--include", help="family ids to force in"); s.add_argument("--exclude", help="family ids to leave out")
-    s.add_argument("--no-grind", action="store_true", help="drop grind=high families"); s.add_argument("--no-addons", action="store_true")
+    s.add_argument("--grind", choices=list(catalog.GRIND_LEVELS), default="medium", help="low drops grind=high families and maps to the easy tune preset; high maps to hard")
+    s.add_argument("--no-grind", action="store_true", help="same as --grind low"); s.add_argument("--no-addons", action="store_true")
     s.add_argument("--minecraft"); s.add_argument("--loader", choices=["forge", "neoforge", "fabric", "quilt"])
     s.add_argument("--tier", choices=list(catalog.TIERS), help="hardware tier; or give --ram/--gpu/--detect")
     s.add_argument("--ram", type=int, help="GB"); s.add_argument("--gpu", choices=list(hardware.GPU_KINDS)); s.add_argument("--detect", action="store_true", help="detect this machine")

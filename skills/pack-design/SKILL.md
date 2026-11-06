@@ -24,7 +24,8 @@ switches a group (Thermal ↔ Create), toggles no-grind, and presses **Пере�
 
 ```json
 { "game": "1.20.1/forge", "want": ["tech", "rpg"], "avoid": [], "include": ["create"], "exclude": [],
-  "no_grind": true, "families": ["create", "mekanism", "..."], "command": "design --want tech,rpg --include create --no-grind --verify --write", "saved_at": "..." }
+  "grind": "low", "difficulty": "easy", "families": ["create", "mekanism", "..."], "ladder": {"early": [], "mid": [], "late": [], "endgame": []},
+  "balance": ["2 families peak at endgame: ..."], "command": "design --want tech,rpg --include create --grind low --verify --write", "saved_at": "..." }
 ```
 
 When they say they have picked (or ask to build from the page), read it: ArtifactData `get`, collection
@@ -53,8 +54,15 @@ command picks families from tags; you turn the person's words into tags.
    1.20.1, and a family in the same `group` as the default is swapped by `--include`.
 2. Hardware: if they mention their machine, pass `--ram <GB> --gpu apple|nvidia|amd|intel`; if it is this
    machine, `--detect`. A low tier drops heavy families (Create, shaders); say so.
-3. Grind: "not much grind", "busy person" → `--no-grind`. That drops grind=high families (DivineRPG);
-   if they asked for one by name, keep it with `--include divinerpg` and point at its tune hint.
+3. Grind: three levels, `--grind low|medium|high` (`--no-grind` = low). Low drops grind=high families
+   (DivineRPG, Draconic, PneumaticCraft) unless `--include`d, and maps to the `easy` tune preset; medium is
+   the authors' balance and `normal`; high keeps everything and maps to `hard`. "Busy person" → low; "long
+   server, we like a wall" → high. After `design --write`, if the pack has a tune.json, run
+   `tune build --difficulty <preset>` so recipes follow the chosen grind.
+   The proposal ends with a **progression ladder** (early / mid / late / endgame, from each family's `power`)
+   and **balance** notes: two families peaking at the same late stage (Mekanism and Draconic, DivineRPG and
+   Apotheosis) means the strongest gear makes the rest decoration. Carry those notes into `/pack-tune`: give
+   each a job the others need, by the standard in `docs/integrations.md` (processing, material, gear, gate).
 4. Run the proposal without writing first and show it:
 
 ```bash

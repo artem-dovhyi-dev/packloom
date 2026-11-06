@@ -50,6 +50,11 @@ class Pick:
     warnings: list[str] = field(default_factory=list)
 
 
+GRIND_LEVELS = ("low", "medium", "high")
+DIFFICULTY_FOR_GRIND = {"low": "easy", "medium": "normal", "high": "hard"}
+STAGES = ("early", "mid", "late", "endgame")
+
+
 @dataclass
 class Proposal:
     minecraft: str
@@ -57,6 +62,21 @@ class Proposal:
     picks: list[Pick]
     skipped: list[tuple[str, str]]   # (family id, why)
     available: list[tuple[str, str, str]] = field(default_factory=list)   # (family id, title, matched tags): extras not picked
+    grind: str = "medium"
+    balance: list[str] = field(default_factory=list)     # what competes for the same stage, what to bridge
+
+    @property
+    def difficulty(self) -> str:
+        return DIFFICULTY_FOR_GRIND[self.grind]
+
+    def ladder(self) -> dict[str, list[str]]:
+        """Chosen families by the stage where their best gear or machines dominate."""
+        out = {s: [] for s in STAGES}
+        for p in self.picks:
+            st = p.family.get("power", "mid")
+            if st in out:
+                out[st].append(p.family["id"])
+        return out
 
     def mods_txt(self, name: str = "") -> str:
         out = [f"# {name or 'pack'}: written by `packloom design` for Minecraft {self.minecraft} {self.loader}.",
@@ -72,12 +92,15 @@ class Proposal:
                 "families": [{"id": p.family["id"], "title": p.family["title"], "reasons": p.reasons,
                               "warnings": p.warnings, "lines": p.lines} for p in self.picks],
                 "skipped": [{"id": i, "why": w} for i, w in self.skipped],
-                "available": [{"id": i, "title": t, "tags": g} for i, t, g in self.available]}
+                "available": [{"id": i, "title": t, "tags": g} for i, t, g in self.available],
+                "grind": self.grind, "difficulty": self.difficulty, "ladder": self.ladder(), "balance": self.balance}
 
 
 def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: list[str] = (),
            tier: str = "high", include: list[str] = (), exclude: list[str] = (), addons: bool = True,
-           no_grind: bool = False) -> Proposal:
+           no_grind: bool = False, grind: str = "medium") -> Proposal:
+    if no_grind:
+        grind = "low"
     """Pick families: every `default` family, every `core` family that matches a wanted tag, plus `include`;
     drop `avoid` tags, `exclude` ids, families too heavy for the hardware tier, and the losers of each
     exclusive `group` (highest priority wins). `no_grind` drops grind=high families unless included by id.
@@ -112,8 +135,8 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
             skipped.append((fid, f"avoids {', '.join(sorted(avoid & set(fam['tags'])))}")); continue
         if WEIGHT.index(fam.get("weight", "light")) > max_w and not forced:
             skipped.append((fid, f"{fam['weight']} for a {tier}-tier machine")); continue
-        if no_grind and fam.get("grind") == "high" and not forced:
-            skipped.append((fid, "grind=high and --no-grind; pass --include to keep it")); continue
+        if grind == "low" and fam.get("grind") == "high" and not forced:
+            skipped.append((fid, "grind=high at --grind low; pass --include to keep it, the easy preset softens it")); continue
         p = Pick(fam, lines=lines)
         if forced:
             p.reasons.append("asked for by id")
@@ -122,7 +145,10 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
         if fam.get("default") and not matched:
             p.reasons.append("default for every pack")
         if fam.get("grind") == "high":
-            p.warnings.append("grindy by default" + (f": {fam['tune_hint']}" if fam.get("tune_hint") else ""))
+            p.warnings.append(("kept at low grind, tune it down" if grind == "low" else "grindy by default")
+                              + (f": {fam['tune_hint']}" if fam.get("tune_hint") else ""))
+        if grind == "high" and fam.get("grind") == "low" and fam.get("tune_hint"):
+            p.warnings.append(f"easy by default; at high grind: {fam['tune_hint']}")
         if fam.get("weight") == "heavy":
             p.warnings.append("heavy on the client")
         picks.append(p)
@@ -137,7 +163,28 @@ def design(catalog: dict, minecraft: str, loader: str, want: list[str], avoid: l
             picks.remove(loser)
             skipped.append((loser.family["id"], f"same job as {members[0].family['id']} ({group}); pass --include {loser.family['id']} to swap"))
     picks.sort(key=lambda p: -p.family.get("priority", 0))
-    return Proposal(minecraft, loader, picks, skipped, available)
+    prop = Proposal(minecraft, loader, picks, skipped, available, grind=grind)
+    prop.balance = balance_notes(prop)
+    return prop
+
+
+def balance_notes(prop: Proposal) -> list[str]:
+    """Where several chosen families peak at the same stage, the strongest one makes the others decoration
+    unless the pack bridges them: say which, and what kind of integration keeps each one worth playing."""
+    notes = []
+    lad = prop.ladder()
+    titles = {p.family["id"]: p.family["title"] for p in prop.picks}
+    for stage in ("late", "endgame"):
+        ids = lad[stage]
+        if len(ids) >= 2:
+            notes.append(f"{len(ids)} families peak at {stage}: {', '.join(titles[i] for i in ids)}. Without bridges the "
+                         f"strongest gear wins and the rest is decoration; give each a job the others need "
+                         f"(processing, a material, a recipe gate), see docs/integrations.md")
+    if lad["endgame"] and not lad["mid"]:
+        notes.append("endgame families with nothing in the middle: the first hours are vanilla, add a mid-game line")
+    if prop.grind == "low" and any(p.family.get("grind") == "high" for p in prop.picks):
+        notes.append("low grind with a grindy family kept by hand: run `tune build --difficulty easy` and follow its tune hint")
+    return notes
 
 
 def verify(lines: list[str], minecraft: str, loader: str, log=print) -> list[tuple[str, str]]:

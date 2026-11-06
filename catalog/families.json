@@ -32,6 +32,7 @@
       "priority": 10,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "ores and alloys, machines and dynamos, ducts, farming machines, Fluxbore and jetpack",
       "when": "first hour of a tech pack; gentle curve, every machine is one block",
       "mods": {
@@ -77,6 +78,7 @@
       "priority": 8,
       "grind": "medium",
       "weight": "heavy",
+      "power": "mid",
       "summary": "rotational power, contraptions, trains; builds that move",
       "when": "when the player wants to build machines by hand rather than place blocks; heavier on the client",
       "mods": {
@@ -113,6 +115,7 @@
       "priority": 9,
       "grind": "medium",
       "weight": "medium",
+      "power": "endgame",
       "summary": "ore tripling, chemistry, Digital Miner, MekaSuit",
       "when": "mid game, after a first machine line; the endgame armor of most tech packs",
       "mods": {
@@ -151,6 +154,7 @@
       "priority": 9,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "digital storage, terminals, autocrafting",
       "when": "once chests overflow, usually chapter 3-4 of a tech pack",
       "mods": {
@@ -200,6 +204,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "late",
       "summary": "BigReactors: multiblock reactors and turbines on yellorium",
       "when": "when energy becomes the bottleneck",
       "mods": {
@@ -222,6 +227,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "the BuildCraft quarry: markers, Quarry Plus, Chunk Destroyer; removes the mining grind",
       "when": "as soon as a dynamo makes 40 RF/t",
       "mods": {
@@ -242,6 +248,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "the Builder with shape cards: digs, moves, copies structures",
       "when": "late game, a quarry alternative",
       "mods": {
@@ -262,6 +269,7 @@
       "default": true,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "one pipe for everything, drawers, bigger chests, wireless energy",
       "when": "from the first chest",
       "mods": {
@@ -320,6 +328,7 @@
       "priority": 9,
       "grind": "high",
       "weight": "medium",
+      "power": "endgame",
       "summary": "eight dimensions, bosses, gear tiers; a whole second line of progression",
       "when": "a parallel line next to tech; boss drops are grindy by default, tune the drop rates",
       "mods": {
@@ -339,6 +348,7 @@
       "priority": 8,
       "grind": "medium",
       "weight": "medium",
+      "power": "mid",
       "summary": "one dimension with a chain of bosses and dungeons",
       "when": "a lighter RPG line than DivineRPG; good for a mixed pack",
       "mods": {
@@ -356,6 +366,7 @@
       "priority": 8,
       "grind": "medium",
       "weight": "light",
+      "power": "mid",
       "summary": "mana from flowers, no energy numbers; magic built from vanilla-looking blocks",
       "when": "a magic line that does not need a tech line",
       "mods": {
@@ -376,6 +387,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "spells you compose from glyphs, familiars, rituals",
       "when": "the friendliest spell mod; works in coop",
       "mods": {
@@ -393,6 +405,7 @@
       "priority": 7,
       "grind": "medium",
       "weight": "light",
+      "power": "early",
       "summary": "multiblock farms, classic bee breeding, resource bees that feed the tech line",
       "when": "chapter 5 of a tech pack; bees that make Thermal, Mekanism and AE2 materials",
       "mods": {
@@ -431,6 +444,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "cutting board, cooking pot, skillet, stove, four crops, meals with Nourishment",
       "when": "whenever you are hungry; one food mod is enough, more only adds near-identical dishes",
       "mods": {
@@ -471,6 +485,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "more biomes, deeper terrain, better vanilla structures; data only, no render cost",
       "when": "new chunks only, so decide before the world is made",
       "mods": {
@@ -569,6 +584,7 @@
       "priority": 9,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "quest book, shared team progress, claimed chunks that keep running, voice chat, free waystones, no item loss on death",
       "when": "any pack for 2-6 friends",
       "mods": {
@@ -628,6 +644,7 @@
       "default": true,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "recipe viewer, ore and drop tables, block info on screen, in-game manuals, inventory sorting and one-click transfers, keybind search, enchantment tooltips, backpacks, food tooltips, drag over slots, a trash block",
       "when": "always",
       "mods": {
@@ -708,6 +725,7 @@
       "default": true,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "render and memory fixes with no gameplay change; Embeddium + Oculus instead of OptiFine (OptiFine breaks Forge mods and is not on Modrinth)",
       "when": "always; required on Apple Silicon and on 8 GB machines",
       "mods": {
@@ -760,6 +778,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "digital storage without channels; simpler than AE2, less autocrafting depth",
       "when": "when AE2's channels and inscriber feel like homework",
       "mods": {
@@ -782,6 +801,7 @@
       "priority": 7,
       "grind": "medium",
       "weight": "medium",
+      "power": "mid",
       "summary": "multiblocks you build by hand, wires on poles, diesel, excavator; the industrial look",
       "when": "a tech line with an aesthetic; slower than Thermal, pairs with it through Almost Unified",
       "mods": {
@@ -805,6 +825,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "medium",
+      "power": "late",
       "summary": "plant gatherers, mob slaughter, laser drill, black hole units; automation of everything organic",
       "when": "mid game, once you have 1k RF/t to spare",
       "mods": {
@@ -827,6 +848,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "energy only: reactors, solar panels, thermo generators, wireless energizing; small and clean",
       "when": "when a pack needs generators without another whole machine line",
       "mods": {
@@ -848,6 +870,7 @@
       "priority": 4,
       "grind": "high",
       "weight": "medium",
+      "power": "late",
       "summary": "pressure instead of RF: drones you program, pressure chambers, refineries, plastic",
       "when": "a second tech line for people who liked the first one; steep",
       "mods": {
@@ -867,6 +890,7 @@
       "priority": 6,
       "grind": "medium",
       "weight": "medium",
+      "power": "late",
       "summary": "rockets, five planets and moons, space stations, oxygen and temperature",
       "when": "late game goal for a tech pack; needs a lot of steel",
       "mods": {
@@ -889,6 +913,7 @@
       "priority": 4,
       "grind": "high",
       "weight": "medium",
+      "power": "endgame",
       "summary": "draconium, the endgame armor and energy core, the Chaos Guardian",
       "when": "the last chapter of a long tech pack; grindy and overpowered by design",
       "mods": {
@@ -908,6 +933,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "medium",
+      "power": "late",
       "summary": "conduits, capacitor banks, alloy smelter, SAG mill; the 1.12 classic rebuilt (6.x, beta on 1.20.1)",
       "when": "if the player remembers Ender IO; expect beta quirks",
       "mods": {
@@ -928,6 +954,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "tools and armor you cast from parts, smeltery, modifiers; replaces vanilla tools for most players",
       "when": "early game; shapes the whole pack's progression",
       "mods": {
@@ -948,6 +975,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "gear from any material with parts and traits; lighter than Tinkers",
       "when": "when Tinkers is too much",
       "mods": {
@@ -967,6 +995,7 @@
       "priority": 6,
       "grind": "medium",
       "weight": "light",
+      "power": "mid",
       "summary": "Mystical Agriculture: grow iron, diamonds and mod materials; Botany Pots grow anything in one block",
       "when": "mid game; a farming answer to the quarry",
       "mods": {
@@ -993,6 +1022,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "summon spirits that mine, craft and carry; a dimensional storage; rituals with a book",
       "when": "a magic line that automates like a tech one",
       "mods": {
@@ -1011,6 +1041,7 @@
       "priority": 6,
       "grind": "medium",
       "weight": "light",
+      "power": "late",
       "summary": "an altar fed with blood, sigils, rituals, living armor",
       "when": "dark theme; grindy early",
       "mods": {
@@ -1031,6 +1062,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "spells with schools and levels, wizard towers and bosses, spellbooks and mana",
       "when": "the most played spell mod of 1.20; RPG feel",
       "mods": {
@@ -1049,6 +1081,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "witchcraft: brooms, crows, candles, a book of shadows",
       "when": "atmosphere first, progression second",
       "mods": {
@@ -1067,6 +1100,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "spirit magic: soul extraction, arcane forging, beautiful effects",
       "when": "a focused, pretty magic line",
       "mods": {
@@ -1088,6 +1122,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "Hephaestus Forge, dark matter, arcane crystals; small and polished",
       "when": "a light touch of magic next to a tech pack",
       "mods": {
@@ -1106,6 +1141,7 @@
       "priority": 3,
       "grind": "medium",
       "weight": "light",
+      "power": "late",
       "summary": "circles drawn with blood, projection, bounded fields; anime magic",
       "when": "for people who know what Mahou Tsukai is",
       "mods": {
@@ -1124,6 +1160,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "medium",
+      "power": "late",
       "summary": "factions, spell crafting, rituals, constructs",
       "when": "a full magic progression",
       "mods": {
@@ -1142,6 +1179,7 @@
       "priority": 3,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "blood as a fluid, dark tanks, vengeance spirits",
       "when": "the other dark magic line",
       "mods": {
@@ -1160,6 +1198,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "endgame",
       "summary": "affixed gear with rarities, boss mobs, a deeper enchanting table, spawner tweaks",
       "when": "turns vanilla loot into an RPG; changes feel across the whole pack",
       "mods": {
@@ -1179,6 +1218,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "trinkets found in chests: boots, gloves, charms in Curios slots",
       "when": "any adventure pack; no progression of its own",
       "mods": {
@@ -1201,6 +1241,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "the sky dimension: islands, dungeons, moas; the oldest dimension mod",
       "when": "a gentle second dimension; early access",
       "mods": {
@@ -1223,6 +1264,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "a dark underground dimension with its own biomes, ores and bosses",
       "when": "mid game dimension",
       "mods": {
@@ -1242,6 +1284,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "late",
       "summary": "the Otherside below the deep dark; warden-themed gear",
       "when": "once the player has met the Warden",
       "mods": {
@@ -1261,6 +1304,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "medium",
+      "power": "mid",
       "summary": "two dimensions, Everbright and Everdawn, with dungeons and bosses",
       "when": "a second RPG line lighter than DivineRPG",
       "mods": {
@@ -1281,6 +1325,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "heavy",
+      "power": "mid",
       "summary": "five huge cave biomes with their own mobs, blocks and bosses",
       "when": "spectacular; heavy on the client; new chunks only",
       "mods": {
@@ -1300,6 +1345,7 @@
       "priority": 6,
       "grind": "medium",
       "weight": "medium",
+      "power": "late",
       "summary": "L_Ender's Cataclysm: dungeons with real bosses; Mowzie's Mobs: a few hand-animated bosses and mobs",
       "when": "when the pack needs fights that take a plan",
       "mods": {
@@ -1323,6 +1369,7 @@
       "priority": 5,
       "grind": "medium",
       "weight": "medium",
+      "power": "late",
       "summary": "dragons you fight, tame and ride; sea serpents, hippogryphs, cyclopes",
       "when": "beta on 1.20.1; a whole pack theme by itself",
       "mods": {
@@ -1341,6 +1388,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "90 animals with real behaviour and drops that matter",
       "when": "any pack that wants a living world",
       "mods": {
@@ -1358,6 +1406,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "quiet, pretty animals: deer, bears, snakes, butterflies",
       "when": "when Alex's Mobs is too much",
       "mods": {
@@ -1380,6 +1429,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "Guard Villagers defend; Easy Villagers make trading and breeding one block",
       "when": "any pack with villages",
       "mods": {
@@ -1400,6 +1450,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "When Dungeons Arise: big dungeons; Towns and Towers + ChoiceTheorem's villages: rebuilt villages; Dungeons and Taverns: small vanilla-style builds",
       "when": "new chunks only; pairs with the worldgen family",
       "mods": {
@@ -1444,6 +1495,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "four seasons: crops grow in season, snow comes and goes, trees change",
       "when": "farming packs; makes a year feel like a year",
       "mods": {
@@ -1466,6 +1518,7 @@
       "priority": 4,
       "grind": "medium",
       "weight": "light",
+      "power": "early",
       "summary": "Tough As Nails: thirst and temperature; Cold Sweat: temperature done carefully",
       "when": "hard survival packs only",
       "mods": {
@@ -1495,6 +1548,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "real fish per biome, rods with upgrades, fillet knife",
       "when": "any pack with water",
       "mods": {
@@ -1514,6 +1568,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "Bakery, Brewery, Vinery, Candlelight, Meadow: pretty cooking lines that share one style",
       "when": "a cozy pack; each module adds a kitchen theme",
       "mods": {
@@ -1545,6 +1600,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "hundreds of foods and crops; the classic",
       "when": "only if Farmer's Delight is not enough; 1.20.1 has the food core only",
       "mods": {
@@ -1564,6 +1620,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "weapon animations, combos, attack ranges that make sense; no new mechanics to learn",
       "when": "any pack with fighting",
       "mods": {
@@ -1585,6 +1642,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "a full third-person combat system with stances, dodges and skills",
       "when": "when combat should be the game; conflicts with many weapon mods",
       "mods": {
@@ -1604,6 +1662,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "forty weapons with unique abilities, netherite tier included",
       "when": "with Better Combat",
       "mods": {
@@ -1625,6 +1684,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "light",
+      "power": "mid",
       "summary": "biplanes, airships, gyrodynes built from wood and iron",
       "when": "a fun way to cross a big world",
       "mods": {
@@ -1647,6 +1707,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "a hundred small things that fit vanilla: signs, jars, ropes, pulleys, bellows",
       "when": "any pack; nothing in it breaks balance",
       "mods": {
@@ -1668,6 +1729,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "vanilla+ in one mod: building blocks, chests you sort, variant trees; every module can be switched off",
       "when": "when the pack should feel like vanilla with more",
       "mods": {
@@ -1686,6 +1748,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "doors, windows, furniture, bridges, roofs, fences, lights, paintings, trapdoors, paths, stairs; one style, every wood",
       "when": "builders' packs",
       "mods": {
@@ -1727,6 +1790,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "hundreds of block variants from a chisel-like workbench",
       "when": "builders' packs",
       "mods": {
@@ -1749,6 +1813,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "block variants with connected textures, lighter than Chipped",
       "when": "when Chipped is too many",
       "mods": {
@@ -1770,6 +1835,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "Handcrafted and Another Furniture: tables, chairs, shelves; Decorative Blocks: beams, chandeliers, braziers",
       "when": "builders' packs",
       "mods": {
@@ -1795,6 +1861,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "any block in any shape: slopes, stairs, doors that look like whatever you put in",
       "when": "builders who want shapes vanilla lacks",
       "mods": {
@@ -1815,6 +1882,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "Xaero's Minimap and World Map: a minimap and a full map with waypoints, fast and light",
       "when": "when the pack has no FTB Chunks map",
       "mods": {
@@ -1840,6 +1908,7 @@
       "priority": 7,
       "grind": "low",
       "weight": "medium",
+      "power": "early",
       "summary": "the classic full-screen map with waypoints and a web view",
       "when": "when the player asks for JourneyMap by name",
       "mods": {
@@ -1861,6 +1930,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "light",
+      "power": "early",
       "summary": "a worn backpack with tanks and a sleeping bag; the alternative to Sophisticated Backpacks",
       "when": "pick one backpack mod",
       "mods": {
@@ -1883,6 +1953,7 @@
       "default": true,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "Almost Unified: one ingot, dust and ore per metal across Thermal, Mekanism, IE, Create (the rest is hidden and converts); Polymorph: when two recipes share a grid, a button picks which",
       "when": "always, as soon as two mods add the same metal",
       "mods": {
@@ -1912,6 +1983,7 @@
       "default": true,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "Faithful 32x: vanilla's look at twice the detail, shipped enabled",
       "when": "always; costs almost nothing",
       "mods": {
@@ -1933,6 +2005,7 @@
       "priority": 8,
       "grind": "low",
       "weight": "heavy",
+      "power": "any",
       "summary": "Complementary Reimagined, shipped enabled through Oculus or Iris",
       "when": "mid and high tier machines; low tier gets a low preset or skips it",
       "mods": {
@@ -1968,6 +2041,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "heavy",
+      "power": "any",
       "summary": "BSL: warm, soft, the other classic",
       "when": "when Complementary is not the taste",
       "mods": {
@@ -1990,6 +2064,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "heavy",
+      "power": "any",
       "summary": "Photon: realistic light, heavier",
       "when": "high tier only",
       "mods": {
@@ -2011,6 +2086,7 @@
       "priority": 5,
       "grind": "low",
       "weight": "medium",
+      "power": "any",
       "summary": "every vanilla mob animated properly; Entity Model Features and Entity Texture Features make the pack work",
       "when": "mid tier and up",
       "mods": {
@@ -2035,6 +2111,7 @@
       "priority": 6,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "Sound Physics Remastered: reverb and occlusion in caves and rooms; AmbientSounds: wind, birds, water",
       "when": "any pack; one of the cheapest upgrades to how the game feels",
       "mods": {
@@ -2057,6 +2134,7 @@
       "priority": 4,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "Particle Rain, Not Enough Animations, 3D Skin Layers, Better Third Person, Legendary Tooltips, dynamic lights",
       "when": "small visual touches with no gameplay change",
       "mods": {
@@ -2089,6 +2167,7 @@
       "priority": 3,
       "grind": "low",
       "weight": "heavy",
+      "power": "any",
       "summary": "level-of-detail terrain far beyond render distance",
       "when": "high tier; shader support is partial on 1.20.1",
       "mods": {
@@ -2110,6 +2189,7 @@
       "priority": 10,
       "grind": "low",
       "weight": "light",
+      "power": "any",
       "summary": "scripts that change recipes and add items; packloom writes them from tune.json",
       "when": "when the pack changes any recipe, difficulty preset or adds a cross-mod item",
       "mods": {
@@ -2124,6 +2204,108 @@
           "architectury-api"
         ]
       }
+    },
+    {
+      "id": "mi",
+      "title": "Modern Industrialization",
+      "tags": [
+        "tech"
+      ],
+      "group": "tech-core",
+      "priority": 6,
+      "grind": "high",
+      "weight": "medium",
+      "power": "late",
+      "pick": "extra",
+      "summary": "GregTech-style multiblocks, steam to nuclear, total automation as the goal; Fabric only on 1.20.1",
+      "when": "a long tech pack for people who liked IC2 and GregTech; each tier is a real wall",
+      "tune_hint": "halve machine casing counts and early steam costs",
+      "mods": {
+        "1.20.1/fabric": [
+          "modern-industrialization"
+        ]
+      },
+      "addons": {},
+      "pairs_with": [
+        "ae2",
+        "logistics"
+      ]
+    },
+    {
+      "id": "techreborn",
+      "title": "Tech Reborn",
+      "tags": [
+        "tech"
+      ],
+      "group": "tech-core",
+      "priority": 5,
+      "grind": "medium",
+      "weight": "light",
+      "power": "late",
+      "pick": "extra",
+      "summary": "the IndustrialCraft 2 line continued: generators, cables, rubber, quantum armour, fusion; Fabric only on 1.20.1",
+      "when": "nostalgia for IC2 on a Fabric pack",
+      "mods": {
+        "1.20.1/fabric": [
+          "techreborn"
+        ]
+      },
+      "addons": {},
+      "pairs_with": [
+        "ae2"
+      ]
+    }
+  ],
+  "missing": [
+    {
+      "title": "Thaumcraft",
+      "why": "no version after 1.12.2 (Thaumcraft 7 unreleased)",
+      "instead": [
+        "occultism",
+        "ars",
+        "malum",
+        "forbidden-arcanus"
+      ]
+    },
+    {
+      "title": "IndustrialCraft 2",
+      "why": "stopped at 1.12.2",
+      "instead": [
+        "techreborn",
+        "mekanism"
+      ]
+    },
+    {
+      "title": "GregTech",
+      "why": "GTCEu Modern targets 1.20.1 Forge on CurseForge only, not Modrinth",
+      "instead": [
+        "mi",
+        "pneumaticcraft",
+        "mekanism"
+      ]
+    },
+    {
+      "title": "BuildCraft",
+      "why": "last release 1.12.2",
+      "instead": [
+        "quarry",
+        "logistics",
+        "create"
+      ]
+    },
+    {
+      "title": "Galacticraft",
+      "why": "1.20.1 builds are alpha and not on Modrinth",
+      "instead": [
+        "space"
+      ]
+    },
+    {
+      "title": "Tinkers' Construct",
+      "why": "on 1.20.1 Forge only; Fabric packs have no port",
+      "instead": [
+        "silent-gear"
+      ]
     }
   ]
 }

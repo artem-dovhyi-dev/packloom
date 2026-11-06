@@ -58,6 +58,11 @@ h2 { font-size: 20px; font-weight: 600 }
 .card.extra { border-style: dashed }
 .card .why { font-size: 11px; color: var(--accent); font-weight: 600 }
 .card[data-state="exclude"] .why { color: var(--avoid) }
+.card.off { opacity: .5; cursor: default; border-style: dotted }
+.missing { display: grid; gap: 6px; font-size: 13px }
+.missing div { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline }
+.missing b { font-family: var(--display) } .missing .m { color: var(--muted) }
+.missing i { font-style: normal; background: var(--chip); border-radius: 4px; padding: 0 6px; font-size: 12px }
 .slip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 14px; display: grid; gap: 10px; min-width: 0 }
 .slip h2 { font-size: 17px }
 .nums { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px }
@@ -76,6 +81,19 @@ button.btn:disabled { opacity: .5; cursor: default }
 .status.ok { color: var(--accent) } .status.err { color: var(--avoid) }
 label.tog { display: flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer }
 label.tog input { accent-color: var(--accent) }
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+@media (max-width: 560px) { .levels { grid-template-columns: 1fr } }
+.level { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; color: var(--ink); font: inherit; display: grid; gap: 3px }
+.level b { font-family: var(--display); font-size: 15px }
+.level span { font-size: 12.5px; color: var(--muted); line-height: 1.35 }
+.level[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent) }
+.ladder { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px }
+.rung { background: var(--chip); border-radius: 8px; padding: 6px 8px; min-width: 0 }
+.rung .st { font: 600 11px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.rung .fams { font-size: 12px; line-height: 1.35; word-break: break-word }
+.rung.crowded { box-shadow: inset 0 0 0 1px var(--avoid) }
+.note { font-size: 12.5px; color: var(--ink); background: var(--avoid-soft); border-radius: 8px; padding: 8px 10px; line-height: 1.4 }
+.note.ok { background: var(--accent-soft) }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted) }
 .legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line) }
 .legend .lg-auto b { background: var(--accent); border-color: var(--accent) } .legend .lg-extra b { border-style: dashed }
@@ -91,47 +109,66 @@ label.tog input { accent-color: var(--accent) }
 <div class="wrap">
   <header>
     <div class="eyebrow">packloom · /pack-design</div>
-    <h1>Каталог родин модів</h1>
-    <p class="lede">Пак збирається не з модів, а з родин: Thermal — це сім модів і три аддони, одна картка. Познач, що хочеш, подивись, що каталог вибрав сам, поправ картками, і натисни «Передати Клоду». Далі Claude запускає <code>design</code> із цим вибором і перевіряє кожен мод на Modrinth.</p>
+    <h1>Mod family catalog</h1>
+    <p class="lede">A pack is built from families, not mods: Thermal is seven mods and three add-ons, one card. Mark what you want, pick a grind level, see what the catalog chose on its own, correct it card by card, and press <b>Hand to Claude</b>. Claude then runs <code>design</code> with exactly this pick, verifies every mod on Modrinth, and sets the tune preset that matches your grind.</p>
   </header>
 
   <div class="steps">
     <div class="board">
       <section class="step" id="step-tags">
-        <div class="eyebrow">1 · Що хочеш</div>
-        <h2>Теги</h2>
-        <p class="hint">Клік: хочу. Ще клік: уникати. Третій: байдуже. База (QoL, продуктивність, баланс, логістика, текстури) входить завжди.</p>
+        <div class="eyebrow">1 · What you want</div>
+        <h2>Tags</h2>
+        <p class="hint">Click once: want. Twice: avoid. Three times: no opinion. The base (quality of life, performance, balance, logistics, textures) is always in.</p>
         <div class="chips" id="tags"></div>
-        <label class="tog"><input type="checkbox" id="nogrind"> Без гринду: родини з важким гриндом випадають, їхні аддони теж</label>
+      </section>
+
+      <section class="step" id="step-grind">
+        <div class="eyebrow">2 · How much grind</div>
+        <h2>Grind level</h2>
+        <div class="levels" id="levels">
+          <button type="button" class="level" data-level="low"><b>Low</b><span>For busy people. Families that grind by default (DivineRPG, Draconic, PneumaticCraft) stay out unless you add them by hand; the pack ships with the <i>easy</i> tune preset, which softens the ones you keep.</span></button>
+          <button type="button" class="level" data-level="medium"><b>Medium</b><span>Every family as its author shipped it, <i>normal</i> tune preset. Grindy families are flagged on their card with a hint of what to soften.</span></button>
+          <button type="button" class="level" data-level="high"><b>High</b><span>Everything in, <i>hard</i> tune preset: pricier machine frames, alloys that need the next tier, tools on rare rods. For long servers.</span></button>
+        </div>
       </section>
 
       <section class="step">
-        <div class="eyebrow">2 · Що каталог обрав</div>
-        <h2>Родини за сферами</h2>
+        <div class="eyebrow">3 · What the catalog chose</div>
+        <h2>Families by area</h2>
         <div class="legend">
-          <span class="lg-auto"><b></b>обрано (тегом або вручну)</span>
-          <span><b></b>є в каталозі, клік додає</span>
-          <span class="lg-extra"><b></b>додаткова родина: лише вручну</span>
-          <span>Однойменна група («один на задачу»): клік по іншій картці групи міняє вибір</span>
+          <span class="lg-auto"><b></b>chosen (by a tag, by hand, or base)</span>
+          <span><b></b>in the catalog, click to add</span>
+          <span class="lg-extra"><b></b>extra family: only by hand</span>
+          <span>Same group = one per job: clicking another card of the group swaps it in</span>
         </div>
         <div id="areas" class="board"></div>
+      </section>
+
+      <section class="step">
+        <div class="eyebrow">4 · Not on this version</div>
+        <h2>Classics with no build here</h2>
+        <p class="hint">Mods people ask for that have no release for this game version or loader, and the family that does their job now.</p>
+        <div class="missing" id="missing"></div>
       </section>
     </div>
 
     <aside class="slip" id="slip">
       <div class="slip-head" id="sliphead">
-        <h2>Замовлення <span class="toggle hint">· торкнись, щоб розгорнути</span></h2>
+        <h2>Your pick <span class="toggle hint">· tap to expand</span></h2>
       </div>
       <div class="nums">
-        <div class="num"><b id="n-fam">0</b><span>родин</span></div>
-        <div class="num"><b id="n-mods">0</b><span>модів</span></div>
-        <div class="num"><b id="n-grind">—</b><span>гринд</span></div>
+        <div class="num"><b id="n-fam">0</b><span>families</span></div>
+        <div class="num"><b id="n-mods">0</b><span>mods</span></div>
+        <div class="num"><b id="n-diff">normal</b><span>tune preset</span></div>
       </div>
       <div class="picked" id="picked"></div>
+      <div class="eyebrow">Progression ladder</div>
+      <div class="ladder" id="ladder"></div>
+      <div id="notes" class="board" style="gap:6px"></div>
       <pre class="cmd" id="cmd"></pre>
       <div class="row">
-        <button class="btn primary" id="send">Передати Клоду</button>
-        <button class="btn" id="copy">Скопіювати</button>
+        <button class="btn primary" id="send">Hand to Claude</button>
+        <button class="btn" id="copy">Copy</button>
       </div>
       <div class="status" id="status"></div>
     </aside>
@@ -145,8 +182,10 @@ label.tog input { accent-color: var(--accent) }
   const TAGS = DATA.tags, FAM = DATA.families, GAME = DATA.game;
   const BASE = new Set(["qol", "perf", "balance", "tune"]);
   const AREAS = ["tech", "storage", "magic", "rpg", "adventure", "combat", "mobs", "survival", "farming", "food", "worldgen", "decor", "coop", "quests", "visual"];
-  const UA = { tech: "Індустрія", storage: "Сховища й логістика", magic: "Магія", rpg: "RPG", adventure: "Пригоди", combat: "Бій", mobs: "Істоти", survival: "Виживання", farming: "Ферми", food: "Їжа", worldgen: "Світ", decor: "Декор", coop: "Кооператив", quests: "Квести", visual: "Вигляд і звук", qol: "Зручність", perf: "Продуктивність", balance: "Баланс", tune: "Налаштування рецептів" };
-  const state = { tags: {}, manual: {}, nogrind: false };   // tags: want|avoid ; manual: include|exclude
+  const NAMES = { tech: "Industry", storage: "Storage and logistics", magic: "Magic", rpg: "RPG", adventure: "Adventure", combat: "Combat", mobs: "Creatures", survival: "Survival", farming: "Farming", food: "Food", worldgen: "World", decor: "Building", coop: "Co-op", quests: "Quests", visual: "Look and sound", qol: "Quality of life", perf: "Performance", balance: "Balance", tune: "Recipe tuning" };
+  const STAGES = ["early", "mid", "late", "endgame"];
+  const DIFF = { low: "easy", medium: "normal", high: "hard" };
+  const state = { tags: {}, manual: {}, grind: "medium" };   // tags: want|avoid ; manual: include|exclude
   const byId = Object.fromEntries(FAM.map(f => [f.id, f]));
 
   function modsOf(f) { return (f.mods || []).length + (f.addons || []).length; }
@@ -156,25 +195,37 @@ label.tog input { accent-color: var(--accent) }
     const avoids = new Set(Object.keys(state.tags).filter(t => state.tags[t] === "avoid"));
     const chosen = {}, why = {};
     for (const f of FAM) {
-      if (state.manual[f.id] === "include") { chosen[f.id] = true; why[f.id] = "вручну"; continue; }
+      if (f.unavailable) continue;
+      if (state.manual[f.id] === "include") { chosen[f.id] = true; why[f.id] = "by hand"; continue; }
       if (state.manual[f.id] === "exclude") continue;
       const av = f.tags.find(t => avoids.has(t));
-      if (av) { why[f.id] = "уникаєш " + av; continue; }
-      if (state.nogrind && f.grind === "high") { why[f.id] = "важкий гринд"; continue; }
-      if (f.default) { chosen[f.id] = true; why[f.id] = "база"; continue; }
+      if (av) { why[f.id] = "avoids " + av; continue; }
+      if (state.grind === "low" && f.grind === "high") { why[f.id] = "grindy, out at low grind"; continue; }
+      if (f.default) { chosen[f.id] = true; why[f.id] = "base"; continue; }
       if (f.pick === "extra") continue;
-      if (f.tags.some(t => wants.has(t))) { chosen[f.id] = true; why[f.id] = "тег " + f.tags.find(t => wants.has(t)); }
+      if (f.tags.some(t => wants.has(t))) { chosen[f.id] = true; why[f.id] = "tag " + f.tags.find(t => wants.has(t)); }
     }
-    // one per group: a manual include wins, else highest priority among the auto picks
     const groups = {};
     for (const id in chosen) { const g = byId[id].group; if (g) (groups[g] = groups[g] || []).push(id); }
     for (const g in groups) {
       const ids = groups[g]; if (ids.length < 2) continue;
       const manual = ids.filter(id => state.manual[id] === "include");
       const keep = manual.length ? manual[manual.length - 1] : ids.sort((a, b) => (byId[b].priority || 0) - (byId[a].priority || 0))[0];
-      for (const id of ids) if (id !== keep) { delete chosen[id]; why[id] = "група: " + byId[keep].title; }
+      for (const id of ids) if (id !== keep) { delete chosen[id]; why[id] = "group: " + byId[keep].title; }
     }
-    return { wants, avoids, chosen, why };
+    for (const id in chosen) {
+      const f = byId[id];
+      if (f.grind === "high") why[id] += state.grind === "low" ? " · kept at low grind, tune it down" : " · grindy";
+    }
+    const ladder = Object.fromEntries(STAGES.map(s => [s, []]));
+    for (const id in chosen) { const st = byId[id].power; if (ladder[st]) ladder[st].push(id); }
+    const balance = [];
+    for (const st of ["late", "endgame"]) if (ladder[st].length >= 2)
+      balance.push(`${ladder[st].length} families peak at ${st}: ${ladder[st].map(i => byId[i].title).join(", ")}. Without bridges the strongest gear wins and the rest is decoration. Claude will propose integrations that give each one a job the others need.`);
+    if (ladder.endgame.length && !ladder.mid.length) balance.push("Endgame families with nothing in the middle: the first hours are vanilla. Add a mid-game line.");
+    const kept = Object.keys(chosen).filter(id => byId[id].grind === "high");
+    if (state.grind === "low" && kept.length) balance.push(`Low grind with ${kept.map(i => byId[i].title).join(", ")} kept by hand: the easy preset applies their tune hint (${kept.map(i => byId[i].tune_hint).filter(Boolean).join("; ") || "see the card"}).`);
+    return { wants, avoids, chosen, why, ladder, balance };
   }
 
   function command(r) {
@@ -185,32 +236,33 @@ label.tog input { accent-color: var(--accent) }
     const exc = Object.keys(state.manual).filter(id => state.manual[id] === "exclude");
     if (inc.length) parts.push("--include " + inc.join(","));
     if (exc.length) parts.push("--exclude " + exc.join(","));
-    if (state.nogrind) parts.push("--no-grind");
+    parts.push("--grind " + state.grind);
     return parts.join(" ") + " --verify --write";
   }
 
   function render() {
     const r = compute();
     document.querySelectorAll("#tags .chip").forEach(c => c.dataset.state = state.tags[c.dataset.tag] || "");
+    document.querySelectorAll(".level").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.level === state.grind)));
     document.querySelectorAll(".card").forEach(c => {
       const id = c.dataset.id, f = byId[id];
       const st = state.manual[id] === "exclude" ? "exclude" : r.chosen[id] ? (f.default ? "default" : state.manual[id] === "include" ? "include" : "auto") : "";
       c.dataset.state = st;
       c.querySelector(".mark").textContent = st === "exclude" ? "×" : st ? "✓" : "";
-      c.querySelector(".why").textContent = st === "exclude" ? "виключено" : (r.why[id] || "");
+      c.querySelector(".why").textContent = st === "exclude" ? "excluded" : (r.why[id] || "");
     });
-    const ids = Object.keys(r.chosen);
-    const fams = ids.map(id => byId[id]);
+    const ids = Object.keys(r.chosen), fams = ids.map(id => byId[id]);
     document.getElementById("n-fam").textContent = fams.length;
     document.getElementById("n-mods").textContent = fams.reduce((n, f) => n + modsOf(f), 0);
-    const g = { low: 0, medium: 0, high: 0 }; fams.forEach(f => g[f.grind || "medium"]++);
-    document.getElementById("n-grind").textContent = g.high ? "важкий" : g.medium > g.low ? "середній" : "легкий";
+    document.getElementById("n-diff").textContent = DIFF[state.grind];
     document.getElementById("picked").innerHTML = fams.map(f => `<i>${f.title}</i>`).join("") +
       Object.keys(state.manual).filter(id => state.manual[id] === "exclude").map(id => `<i class="x">${byId[id].title}</i>`).join("");
+    document.getElementById("ladder").innerHTML = STAGES.map(st => `<div class="rung${r.ladder[st].length >= 2 && (st === "late" || st === "endgame") ? " crowded" : ""}"><div class="st">${st}</div><div class="fams">${r.ladder[st].map(i => byId[i].title).join(", ") || "—"}</div></div>`).join("");
+    document.getElementById("notes").innerHTML = r.balance.length ? r.balance.map(b => `<div class="note">${b}</div>`).join("") : `<div class="note ok">No two chosen families compete for the same late stage.</div>`;
     document.getElementById("cmd").textContent = "packloom " + command(r);
     document.querySelectorAll(".area").forEach(a => {
       const n = [...a.querySelectorAll(".card")].filter(c => c.dataset.state && c.dataset.state !== "exclude").length;
-      a.querySelector(".count").textContent = n ? n + " обрано" : "";
+      a.querySelector(".count").textContent = n ? n + " chosen" : "";
     });
     try { localStorage.setItem("packloom-picks", JSON.stringify(state)); } catch (e) {}
   }
@@ -220,7 +272,7 @@ label.tog input { accent-color: var(--accent) }
     for (const t of Object.keys(TAGS)) {
       if (BASE.has(t)) continue;
       const b = document.createElement("button"); b.className = "chip"; b.dataset.tag = t; b.type = "button";
-      b.innerHTML = `${UA[t] || t} <small>${t}</small>`;
+      b.innerHTML = `${NAMES[t] || t} <small>${t}</small>`;
       b.title = TAGS[t];
       b.addEventListener("click", () => { state.tags[t] = state.tags[t] === "want" ? "avoid" : state.tags[t] === "avoid" ? "" : "want"; if (!state.tags[t]) delete state.tags[t]; render(); });
       box.appendChild(b);
@@ -228,13 +280,18 @@ label.tog input { accent-color: var(--accent) }
   }
 
   function card(f) {
-    const b = document.createElement("button"); b.type = "button"; b.className = "card" + (f.pick === "extra" ? " extra" : ""); b.dataset.id = f.id;
-    const meta = [`${modsOf(f)} mods`, `grind ${f.grind || "medium"}`, f.weight ? `weight ${f.weight}` : "", f.group ? `1 of ${f.group}` : "", f.pick === "extra" ? "extra" : "core"].filter(Boolean);
+    const b = document.createElement("button"); b.type = "button"; b.className = "card" + (f.pick === "extra" ? " extra" : "") + (f.unavailable ? " off" : ""); b.dataset.id = f.id;
+    if (f.unavailable) {
+      b.disabled = true;
+      b.innerHTML = `<div class="t"><span class="mark"></span><span>${f.title}</span></div><div class="s">${f.summary || ""}</div><div class="meta"><span>only ${f.unavailable.join(", ")}</span></div><div class="why"></div>`;
+      return b;
+    }
+    const meta = [`${modsOf(f)} mods`, `grind ${f.grind || "medium"}`, `peak ${f.power || "mid"}`, f.weight ? `weight ${f.weight}` : "", f.group ? `1 of ${f.group}` : "", f.pick === "extra" ? "extra" : "core"].filter(Boolean);
     b.innerHTML = `<div class="t"><span class="mark"></span><span>${f.title}</span></div>
       <div class="s">${f.summary || ""}</div>
       <div class="meta">${meta.map(m => `<span>${m}</span>`).join("")}</div>
       <div class="why"></div>`;
-    b.title = (f.when ? f.when + "\n" : "") + (f.mods || []).join(", ") + ((f.addons || []).length ? "\n+ " + f.addons.map(a => a[0]).join(", ") : "");
+    b.title = (f.when ? f.when + "\n" : "") + (f.mods || []).join(", ") + ((f.addons || []).length ? "\n+ " + f.addons.map(a => a[0]).join(", ") : "") + (f.tune_hint ? "\ntune hint: " + f.tune_hint : "");
     b.addEventListener("click", () => {
       const r = compute();
       if (state.manual[f.id] === "include") state.manual[f.id] = "exclude";
@@ -249,13 +306,13 @@ label.tog input { accent-color: var(--accent) }
   function buildAreas() {
     const root = document.getElementById("areas");
     const placed = new Set();
-    const groupsOrder = [...AREAS, ...[...BASE].filter(t => TAGS[t])];
-    for (const t of groupsOrder) {
+    const order = [...AREAS, ...[...BASE].filter(t => TAGS[t])];
+    for (const t of order) {
       const fams = FAM.filter(f => !placed.has(f.id) && (f.tags[0] === t || (!AREAS.includes(f.tags[0]) && f.tags.includes(t))));
       if (!fams.length) continue;
       fams.forEach(f => placed.add(f.id));
       const sec = document.createElement("div"); sec.className = "area";
-      sec.innerHTML = `<div class="area-head"><h3>${UA[t] || t}</h3><span class="desc">${TAGS[t] || ""}</span><span class="count"></span></div><div class="cards"></div>`;
+      sec.innerHTML = `<div class="area-head"><h3>${NAMES[t] || t}</h3><span class="desc">${TAGS[t] || ""}</span><span class="count"></span></div><div class="cards"></div>`;
       const grid = sec.querySelector(".cards");
       fams.sort((a, b) => (a.pick === "extra") - (b.pick === "extra") || (b.priority || 0) - (a.priority || 0)).forEach(f => grid.appendChild(card(f)));
       root.appendChild(sec);
@@ -264,31 +321,32 @@ label.tog input { accent-color: var(--accent) }
 
   async function send() {
     const r = compute(), btn = document.getElementById("send"), st = document.getElementById("status");
-    btn.disabled = true; st.className = "status"; st.textContent = "Зберігаю…";
+    btn.disabled = true; st.className = "status"; st.textContent = "Saving…";
     const doc = { game: GAME, want: [...r.wants], avoid: [...r.avoids],
       include: Object.keys(state.manual).filter(id => state.manual[id] === "include"),
       exclude: Object.keys(state.manual).filter(id => state.manual[id] === "exclude"),
-      no_grind: state.nogrind, families: Object.keys(r.chosen), command: command(r), saved_at: new Date().toISOString() };
+      grind: state.grind, difficulty: DIFF[state.grind], families: Object.keys(r.chosen), ladder: r.ladder, balance: r.balance,
+      command: command(r), saved_at: new Date().toISOString() };
     try {
       const db = await window.claude?.use?.("db");
       if (!db) throw new Error("no-db");
       await db.doc("picks/current").set(doc);
-      st.className = "status ok"; st.textContent = "Збережено. Скажи Клоду: «збери пак за моїм вибором».";
+      st.className = "status ok"; st.textContent = "Saved. Tell Claude: “build the pack from my pick”.";
     } catch (e) {
-      st.className = "status err"; st.textContent = e.message === "no-db" ? "Тут база недоступна: скопіюй команду і встав у чат." : "Не збереглося: скопіюй команду і встав у чат.";
+      st.className = "status err"; st.textContent = e.message === "no-db" ? "No database in this view: copy the command and paste it into the chat." : "Could not save: copy the command and paste it into the chat.";
     } finally { btn.disabled = false; }
   }
 
   function copy() {
     const text = document.getElementById("cmd").textContent, st = document.getElementById("status");
-    const fallback = () => { const s = window.getSelection(), rg = document.createRange(); rg.selectNodeContents(document.getElementById("cmd")); s.removeAllRanges(); s.addRange(rg); st.textContent = "Виділено, натисни Ctrl/Cmd+C."; };
-    try { navigator.clipboard.writeText(text).then(() => { st.className = "status ok"; st.textContent = "Скопійовано."; }, fallback); } catch (e) { fallback(); }
+    const fallback = () => { const s = window.getSelection(), rg = document.createRange(); rg.selectNodeContents(document.getElementById("cmd")); s.removeAllRanges(); s.addRange(rg); st.textContent = "Selected; press Ctrl/Cmd+C."; };
+    try { navigator.clipboard.writeText(text).then(() => { st.className = "status ok"; st.textContent = "Copied."; }, fallback); } catch (e) { fallback(); }
   }
 
-  try { Object.assign(state, JSON.parse(localStorage.getItem("packloom-picks") || "{}")); } catch (e) {}
+  try { const saved = JSON.parse(localStorage.getItem("packloom-picks") || "{}"); if (saved.tags) state.tags = saved.tags; if (saved.manual) state.manual = saved.manual; if (DIFF[saved.grind]) state.grind = saved.grind; } catch (e) {}
   buildTags(); buildAreas();
-  document.getElementById("nogrind").checked = !!state.nogrind;
-  document.getElementById("nogrind").addEventListener("change", e => { state.nogrind = e.target.checked; render(); });
+  document.getElementById("missing").innerHTML = (DATA.missing || []).map(m => `<div><b>${m.title}</b><span class="m">${m.why}</span>${(m.instead || []).map(i => byId[i] ? `<i>${byId[i].title}${byId[i].unavailable ? " (" + byId[i].unavailable.join(", ") + ")" : ""}</i>` : "").join("")}</div>`).join("");
+  document.querySelectorAll(".level").forEach(b => b.addEventListener("click", () => { state.grind = b.dataset.level; render(); }));
   document.getElementById("send").addEventListener("click", send);
   document.getElementById("copy").addEventListener("click", copy);
   const slip = document.getElementById("slip");

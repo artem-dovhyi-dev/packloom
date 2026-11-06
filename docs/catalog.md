@@ -15,7 +15,8 @@ like Immersive Engineering", "the Aether", "Macaw's furniture") and can say what
   "priority": 9,                    // tie-breaker inside a group and the order in the proposal
   "default": false,                 // true: in every proposal (qol, perf, balance, logistics, textures)
   "pick": "core",                   // core (default): a wanted tag picks it; extra: only `--include <id>` does, design lists it as available
-  "grind": "low",                   // low | medium | high; --no-grind drops high unless --include'd
+  "grind": "low",                   // low | medium | high; --grind low drops high unless --include'd
+  "power": "mid",                   // early | mid | late | endgame | any: where its best gear or machines dominate; design's ladder and balance notes
   "weight": "medium",               // light | medium | heavy; tier low allows light, mid allows medium
   "summary": "digital storage, terminals, autocrafting",
   "when": "once chests overflow, usually chapter 3-4 of a tech pack",
