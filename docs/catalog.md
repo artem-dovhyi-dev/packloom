@@ -97,3 +97,12 @@ catalog still knows that Ad Astra, the Aether and Mahou Tsukai exist.
 Not on Modrinth, so not in the catalog as slugs: Twilight Forest and Flux Networks (`manual:` lines),
 Compact Machines, Immersive Petroleum, Croptopia, Mob Grinding Utils. Add them with `manual:` when a pack
 needs them.
+
+## The page and `picks.json`
+
+`catalog page` renders `lib/packloom/catalog_page.html` with the families for the pack's game and loader
+embedded; the plugin publishes it as an artifact with a db. The person's choice comes back as one document,
+`picks/current`, which the skill saves as `<pack>/picks.json` and feeds to `design --picks`. The page's
+JavaScript repeats the picking rules of `design` (tags, defaults, groups, grind) so the numbers on the page
+match the proposal; when they drift, `design --picks` prints the difference, and the fix goes into
+`catalog_page.html`, never into the document.

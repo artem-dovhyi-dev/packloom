@@ -38,7 +38,7 @@ proposes, the human decides.
 
 | You say | Skill | What happens |
 |---|---|---|
-| "I want RPG and industry, farming, a nice world, no grind, with friends" | `/pack-design` | first an interactive catalog page (`catalog page`, published as an artifact): tags, 80 family cards by area, one-per-job groups, no-grind, a live `design` command and a **Передати Клоду** button that writes the pick where Claude reads it back; then tags → families from a catalog of 80 (Thermal, Create, Mekanism, AE2, Immersive Engineering, the Aether, Ars Nouveau, Macaw's, Fresh Animations...) → `mods.txt`, every slug verified on Modrinth for your game and loader; same-job families (Thermal vs Create, AE2 vs Refined Storage) are picked by priority and the swap is one flag; quality of life, performance, balance (Almost Unified, Polymorph) and Faithful textures come by default |
+| "I want RPG and industry, farming, a nice world, no grind, with friends" | `/pack-design` | the standard flow is a page, not a chat: `catalog page` renders the catalog as an interactive artifact (tags, grind level, 80 family cards by area, one-per-job groups, a progression ladder with balance notes, the live `design` command) and its **Hand to Claude** button writes the pick where Claude reads it back; `design --picks picks.json --verify --write` builds from that document and keeps it in the pack. Without the Artifact tool: words → tags → families from a catalog of 80 (Thermal, Create, Mekanism, AE2, Immersive Engineering, the Aether, Ars Nouveau, Macaw's, Fresh Animations...) → `mods.txt`, every slug verified on Modrinth for your game and loader; same-job families (Thermal vs Create, AE2 vs Refined Storage) are picked by priority and the swap is one flag; quality of life, performance, balance (Almost Unified, Polymorph) and Faithful textures come by default |
 | "Make it harder" / "the quarry should need a diamond block" / "the lines should meet: a sword from DivineRPG and Thermal, Thermal machines that grind Divine ores" | `/pack-tune` | `tune.json` holds items, recipes, removals, input swaps, `easy`/`normal`/`hard` presets and **integrations** (self-contained bridges between mods, 16-24 per pack by the [standard](docs/integrations.md)); every id is checked against the registry (16 000 recipes, 8 800 items in TechPack) with "did you mean" hints; KubeJS scripts and `INTEGRATIONS.md` are generated, never hand-written |
 | "The new items look like placeholders" / "draw an icon in Thermal's style" | `/pack-icons` | `icons.json` holds 16×16 icons as text grids with a material and a colour; the shades are a hue-shifted ramp, the silhouette is adapted from the mod's own texture (`icons adapt divinerpg:realmite_sword ...`), and `icons sheet` puts the result next to its parents so it is judged before it ships |
 | "It has to run on my 16 GB M1" / "my friend has 8 GB" | `/pack-hardware` | heap, tier, shader preset, mod ceiling, Apple Silicon notes; `--apply` writes `memory_mb` and adds the performance family |
@@ -137,7 +137,7 @@ listed but not forced, no grind by default.
 ## Development
 
 ```bash
-python3 -m unittest discover -s tests          # 38 tests, stdlib unittest
+python3 -m unittest discover -s tests          # 44 tests, stdlib unittest
 PYTHONPATH=lib python3 -m packloom --help
 ```
 

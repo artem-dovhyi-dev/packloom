@@ -435,6 +435,50 @@ class CatalogPageTests(unittest.TestCase):
         self.assertIn("picks/current", html)
 
 
+class PicksTests(unittest.TestCase):
+    """`design --picks` takes the document the catalog page wrote and runs the same proposal."""
+    DOC = {"game": "1.20.1/forge", "want": ["tech"], "avoid": [], "include": ["divinerpg"], "exclude": [], "grind": "low",
+           "difficulty": "easy", "families": ["thermal", "divinerpg"], "command": "design --want tech --include divinerpg --grind low"}
+
+    def _run(self, argv):
+        import io, contextlib
+        from packloom import cli
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            cli.main(argv)
+        return out.getvalue()
+
+    def test_picks_fill_the_flags_and_the_game(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "picks.json"; f.write_text(json.dumps(self.DOC))
+            prop = json.loads(self._run(["design", "--picks", str(f), "--json"]))
+        self.assertEqual(prop["grind"], "low"); self.assertEqual(prop["difficulty"], "easy")
+        ids = [p["id"] for p in prop["families"]]
+        self.assertIn("divinerpg", ids); self.assertIn("thermal", ids)
+
+    def test_flags_win_over_the_page_and_envelope_is_unwrapped(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "picks.json"; f.write_text(json.dumps({"data": self.DOC}))   # ArtifactData get envelope
+            prop = json.loads(self._run(["design", "--picks", str(f), "--grind", "high", "--json"]))
+        self.assertEqual(prop["grind"], "high")
+
+    def test_write_keeps_the_pick_next_to_mods_txt(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "picks.json"; f.write_text(json.dumps(self.DOC))
+            self._run(["init", "--dir", d, "--name", "T", "--minecraft", "1.20.1", "--loader", "forge"])
+            out = self._run(["--pack", d, "design", "--picks", str(f), "--write", "--force"])
+            self.assertIn("different set", out)      # the sample doc lists two families; design picks the defaults too
+            saved = json.loads((Path(d) / "picks.json").read_text())
+            self.assertEqual(saved["families"], ["thermal", "divinerpg"])
+            self.assertIn("divinerpg", (Path(d) / "mods.txt").read_text())
+
+    def test_a_file_that_is_not_a_pick_is_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "x.json"; f.write_text("{}")
+            with self.assertRaises(SystemExit):
+                self._run(["design", "--picks", str(f)])
+
+
 class GrindAndBalanceTests(unittest.TestCase):
     def test_grind_levels_and_ladder(self):
         from packloom import catalog

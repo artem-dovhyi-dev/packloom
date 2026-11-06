@@ -6,34 +6,61 @@ allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/run.py *), Read, Write, 
 
 # Design a pack from words
 
-## The catalog page: let the person pick on a board, not in a chat
+## The standard flow: the catalog page, a pick, a build
 
-When the Artifact tool is available, start here instead of asking questions: render the catalog as an
-interactive page and publish it, then read the pick back.
+This is how a pack is designed with packloom when the Artifact tool is available. Do not interview the
+person about mods in chat and do not type `design` flags from their words while the page is possible;
+the page is the interface, the chat is for what the page cannot say.
 
-```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/run.py catalog page --out catalog.html     # 80 families for the pack's game and loader
-```
+1. **Render and publish the page.** One command, one publish:
 
-Publish `catalog.html` with the Artifact tool, `icon` "catalog", and
-`capabilities: {"db": {"rules": [{"path": "", "read": "view", "write": "admin"}]}}` (only the owner and
-editors can write a pick; everyone the page is shared with can read it). Republish the same file to keep the
-URL when the catalog changes. On the page the person marks tags (want / avoid), ticks or crosses families,
-switches a group (Thermal ↔ Create), toggles no-grind, and presses **Передати Клоду**; that writes
-`picks/current` into the artifact's db:
+   ```bash
+   python3 ${CLAUDE_SKILL_DIR}/scripts/run.py catalog page --out catalog.html     # the families for the pack's game and loader
+   ```
 
-```json
-{ "game": "1.20.1/forge", "want": ["tech", "rpg"], "avoid": [], "include": ["create"], "exclude": [],
-  "grind": "low", "difficulty": "easy", "families": ["create", "mekanism", "..."], "ladder": {"early": [], "mid": [], "late": [], "endgame": []},
-  "balance": ["2 families peak at endgame: ..."], "command": "design --want tech,rpg --include create --grind low --verify --write", "saved_at": "..." }
-```
+   Publish `catalog.html` with the Artifact tool, `icon` "catalog", `description` "Pick the families of
+   your modpack", and `capabilities: {"db": {"rules": [{"path": "", "read": "view", "write": "admin"}]}}`
+   (the owner and editors write the pick, everyone the page is shared with reads it). When a page for this
+   pack was published before (the person gives its link, or `picks.json` in the pack has `artifact`), pass
+   that `url` so the link stays the same. Tell the person in one line what to do on it: mark tags, choose a
+   grind level, correct the cards, press **Hand to Claude**. Then stop and wait; the pick is theirs.
 
-When they say they have picked (or ask to build from the page), read it: ArtifactData `get`, collection
-`picks`, doc_id `current`, the artifact's url. Run the `command` field through run.py (prefix `design`
-flags with the pack's `--minecraft`/`--loader` if there is no pack yet) and continue at step 4 below with the
-result. If the db has no document, the page could not save (no db in that viewer): ask them to press
-**Скопіювати** and paste the command. Never rebuild the pick from memory of the page; the document is the
-record.
+2. **Read the pick back.** When they say they have picked (or ask to build from the page), read the
+   document with ArtifactData: `get`, the artifact's `url`, collection `picks`, doc_id `current`. Save it
+   verbatim as `picks.json` in the pack folder (or the folder the pack will be created in) and add the
+   artifact's `url` under the key `artifact`. The page writes:
+
+   ```json
+   { "game": "1.20.1/forge", "want": ["tech", "rpg"], "avoid": [], "include": ["create"], "exclude": [],
+     "grind": "low", "difficulty": "easy", "families": ["create", "mekanism", "..."],
+     "ladder": {"early": [], "mid": [], "late": [], "endgame": []}, "balance": ["2 families peak at endgame: ..."],
+     "command": "design --want tech,rpg --include create --grind low --verify --write", "saved_at": "..." }
+   ```
+
+   If `get` finds no document, the page could not save in that viewer: ask them to press **Copy** on the
+   page and paste the command, then write the same fields into `picks.json` by hand from that command. Never
+   rebuild the pick from memory of the page; the document is the record.
+
+3. **Run it from the file, not from retyped flags.** `init` the pack if there is none (the game and loader
+   are in the document's `game`), then:
+
+   ```bash
+   python3 ${CLAUDE_SKILL_DIR}/scripts/run.py design --picks picks.json
+   python3 ${CLAUDE_SKILL_DIR}/scripts/run.py design --picks picks.json --verify --write    # --force to replace mods.txt
+   ```
+
+   `--picks` fills want / avoid / include / exclude / grind and the game from the document; flags given on
+   the command line win over it (`--ram 16 --gpu apple` or `--detect` for the machine). The first run shows
+   the proposal, the ladder and the balance notes; read step 4 of the next section for what to say about
+   them. `--write` also copies the document to `<pack>/picks.json`, so the pack remembers what was chosen on
+   the page. A line starting with `! the page showed a different set` means the page's JavaScript and the
+   catalog disagree: trust `design`, build, and report the difference as a bug in `catalog_page.html`.
+
+4. **Finish the chain.** `tune build --difficulty <difficulty from the document>` when the pack has a
+   tune.json; the balance notes go to `/pack-tune` as integration work; then `/pack-build` and `/pack-test`.
+
+Changing the pick later is the same loop: the person reopens the page (same link), presses **Hand to Claude**
+again, and you read `picks/current` again; `design --picks picks.json --write --force` replaces mods.txt.
 
 ## From words, without the page
 

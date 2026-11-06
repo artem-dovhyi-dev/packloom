@@ -262,8 +262,32 @@ def cmd_catalog_page(pack: Pack, out: Path) -> dict:
     return {"path": str(out), "families": len(fams), "game": key}
 
 
+def _load_picks(path: str) -> dict:
+    """The document the catalog page wrote (`picks/current`, saved as a file by Claude or pasted by the user).
+    Accepts the bare document or the ArtifactData envelope around it."""
+    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    for key in ("data", "document", "doc"):
+        if isinstance(doc.get(key), dict) and "families" in doc[key]:
+            doc = doc[key]
+    if "families" not in doc or "grind" not in doc:
+        sys.exit(f"{path}: not a catalog page pick (needs 'families' and 'grind'); it is written by the page's Hand to Claude button")
+    return doc
+
+
 def cmd_design(args):
     cat = catalog.load(Path(args.catalog) if args.catalog else None)
+    picks = _load_picks(args.picks) if args.picks else None
+    if picks:   # flags given on the command line still win over the page
+        args.want = args.want or ",".join(picks.get("want", []))
+        args.avoid = args.avoid or ",".join(picks.get("avoid", []))
+        args.include = args.include or ",".join(picks.get("include", []))
+        args.exclude = args.exclude or ",".join(picks.get("exclude", []))
+        args.grind = args.grind or picks.get("grind")
+        if not (args.minecraft and args.loader) and "/" in picks.get("game", ""):
+            args.minecraft, args.loader = picks["game"].split("/", 1)
+    if not args.want:
+        sys.exit("design needs --want <tags> or --picks <file from the catalog page>")
+    args.grind = args.grind or "medium"
     pack = None
     if args.minecraft and args.loader:
         mc, loader = args.minecraft, args.loader
@@ -273,8 +297,13 @@ def cmd_design(args):
     tier = args.tier or (hardware.from_args(args.ram, args.gpu).tier if (args.ram or args.gpu or args.detect) else "high")
     prop = catalog.design(cat, mc, loader, _split(args.want), _split(args.avoid), tier=tier, include=_split(args.include),
                           exclude=_split(args.exclude), addons=not args.no_addons, no_grind=args.no_grind, grind=args.grind)
+    drift = None
+    if picks:
+        page, mine = set(picks["families"]), {p.family["id"] for p in prop.picks}
+        if page != mine:
+            drift = {"page_only": sorted(page - mine), "design_only": sorted(mine - page)}
     if args.json and not args.verify:
-        print(json.dumps(prop.as_dict(), indent=2, ensure_ascii=False))
+        print(json.dumps(prop.as_dict() | ({"drift": drift} if drift else {}), indent=2, ensure_ascii=False))
     else:
         print(f"Proposal for Minecraft {mc} {loader} (tier {tier}, grind {prop.grind} -> tune difficulty {prop.difficulty}): "
               f"{len(prop.picks)} families, {sum(len(p.lines) for p in prop.picks)} mods.txt lines\n")
@@ -295,6 +324,10 @@ def cmd_design(args):
             print("\nalso in the catalog for these tags (add one with --include <id>):")
             for fid, title, tags in prop.available:
                 print(f"  - {fid}: {title} [{tags}]")
+        if drift:
+            print("\n! the page showed a different set than design picked; the page's JavaScript and the catalog may be out of step:")
+            if drift["page_only"]: print("    on the page only: " + ", ".join(drift["page_only"]))
+            if drift["design_only"]: print("    in design only:  " + ", ".join(drift["design_only"]))
     lines = [l for p in prop.picks for l in p.lines]
     if args.verify:
         print(f"\nverifying {len(lines)} entries on Modrinth")
@@ -308,6 +341,9 @@ def cmd_design(args):
         if pack.mods_file.exists() and not args.force:
             sys.exit(f"{pack.mods_file} exists; pass --force to overwrite")
         pack.mods_file.write_text(prop.mods_txt(pack.name), encoding="utf-8")
+        if picks:   # the record of what was chosen on the page, next to the mods.txt it produced
+            (pack.dir / "picks.json").write_text(json.dumps(picks, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(f"wrote {pack.dir / 'picks.json'} (the pick from the catalog page)")
         print(f"\nwrote {pack.mods_file} ({len(lines)} entries)")
 
 
@@ -541,9 +577,10 @@ def main(argv=None):
     s.add_argument("--catalog", help="another families.json"); s.add_argument("--json", action="store_true")
 
     s = sub.add_parser("design", help="turn wanted tags into a mods.txt proposal"); s.set_defaults(fn=cmd_design)
-    s.add_argument("--want", required=True, help="comma-separated tags, see `catalog tags`"); s.add_argument("--avoid", help="tags to leave out")
+    s.add_argument("--want", help="comma-separated tags, see `catalog tags`"); s.add_argument("--avoid", help="tags to leave out")
+    s.add_argument("--picks", help="the picks/current document the catalog page wrote (json); fills --want/--avoid/--include/--exclude/--grind and the game")
     s.add_argument("--include", help="family ids to force in"); s.add_argument("--exclude", help="family ids to leave out")
-    s.add_argument("--grind", choices=list(catalog.GRIND_LEVELS), default="medium", help="low drops grind=high families and maps to the easy tune preset; high maps to hard")
+    s.add_argument("--grind", choices=list(catalog.GRIND_LEVELS), help="default medium; low drops grind=high families and maps to the easy tune preset; high maps to hard")
     s.add_argument("--no-grind", action="store_true", help="same as --grind low"); s.add_argument("--no-addons", action="store_true")
     s.add_argument("--minecraft"); s.add_argument("--loader", choices=["forge", "neoforge", "fabric", "quilt"])
     s.add_argument("--tier", choices=list(catalog.TIERS), help="hardware tier; or give --ram/--gpu/--detect")

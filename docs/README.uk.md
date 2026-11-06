@@ -10,7 +10,7 @@ packloom це плагін для Claude Code і звичайна утиліта
 
 | Кажеш | Команда | Результат |
 |---|---|---|
-| «хочу RPG і індустрію, трохи ферм, гарний світ, без грайнду, з друзями» | `design` | `mods.txt` з каталогу 80 родин (Thermal, Create, Mekanism, AE2, Immersive Engineering, Aether, Botania, Macaw's, Fresh Animations…), кожен мод перевірено на Modrinth; QoL (JEI, сортування інвентарю, пошук клавіш), оптимізація, баланс (Almost Unified, Polymorph) і текстури Faithful йдуть за замовчуванням і вже ввімкнені |
+| «хочу RPG і індустрію, трохи ферм, гарний світ, без грайнду, з друзями» | `/pack-design` | спершу інтерактивна сторінка каталогу (артефакт): теги, рівень гринду, картки родин, кнопка **Hand to Claude** передає вибір назад; `design --picks picks.json` збирає `mods.txt` саме з цього вибору. Каталог: 80 родин (Thermal, Create, Mekanism, AE2, Immersive Engineering, Aether, Botania, Macaw's, Fresh Animations…), кожен мод перевірено на Modrinth; QoL (JEI, сортування інвентарю, пошук клавіш), оптимізація, баланс (Almost Unified, Polymorph) і текстури Faithful йдуть за замовчуванням і вже ввімкнені |
 | «зроби важче» / «меч, що поєднує DivineRPG і Thermal» / «хай лінії перетинаються» | `tune` | `tune.json` → скрипти KubeJS; кожен id звірено з реєстром предметів; **інтеграції** між модами як окремі блоки (у TechPack їх 19: пил Divine-руд у Thermal і Mekanism, сплав Fluxed Realmite, броня Osmic Arlemite, Інсолятор ростить Farmer's Delight…), `tune doc` пише `INTEGRATIONS.md` для гравців |
 | «має тягнути на моєму M1 з 16 ГБ» | `hardware` | heap, рівень шейдерів, моди оптимізації |
 | «яка клавіша що робить?» | `keys` | сторінка `keybinds.html` з клавіатурою |
